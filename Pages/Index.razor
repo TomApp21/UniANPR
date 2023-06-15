@@ -1,0 +1,61 @@
+﻿@page "/"
+@inherits ThreeSComponentBase
+@using ThreeSC.Net6Lib.BlazorTools.Components.Weather
+
+@using UniANPR.Models.ThreeSCBaseImplementations
+@using ThreeSC.NetStandardLib.StandardTools.Models;
+@using ThreeSC.Net6Lib.BlazorTools.Components.VersionHistory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<h1> Localisation Test</h1>
+<h3>@GetLocalisedString("SaveBtnText")</h3>
+
+<br />
+
+<CurrentWeatherSummary />
+
+
+<br />
+
+
+<TelerikDropDownList Data="@_allCultures"
+                     Value="selectedOption"
+                     TItem="PossibleCultureDefinitionModel"
+                     TValue="string"
+                     ValueField="@(nameof(PossibleCultureDefinitionModel.CultureCode))"
+                     TextField="@(nameof(PossibleCultureDefinitionModel.CultureDisplayName))">
+</TelerikDropDownList>
+
+<TelerikButton OnClick="@ShowVersionWindow">Version History Test</TelerikButton>
+<TelerikButton OnClick="@ShowEditPrefWindow">Edit user prefs</TelerikButton>
+
+@if (IsInRole("Normal"))
+{
+    
+    <TelerikButton OnClick="@ShowUserGuidePopup">Help test</TelerikButton>
+}
+else if (IsInRole("SuperAdmin"))
+{
+}
+else
+{
+    
+}
+
+
+<VersionHistoryPopUp @ref="thisVersionHistoryPopUp"></VersionHistoryPopUp>
+<ThreeSC.Net6Lib.BlazorTools.Components.UserManagement.ThreeSCUserPersonalProfilePopup TUserPofileModel="TestAppUser" @ref="thisThreeSCUserPersonalProfilePopup" />
+
+<hr />
+
+
+<ThreeSCHelpButtonAndPopup @ref="thisHelpButtonPopup"
+                           SelectedUserGuideDocumentPath="@thisHelpPopupDefintion.DocumentPath"
+                           ThisPageNumber="@thisHelpPopupDefintion.PageNumber"
+                           DialogWindowTitle="@thisHelpPopupDefintion.PopupWindowString">
+</ThreeSCHelpButtonAndPopup>
