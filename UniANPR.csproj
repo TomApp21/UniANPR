@@ -27,6 +27,7 @@
   <ItemGroup>
     <None Include="bundleconfig.json" />
     <None Include="compilerconfig.json" />
+    <None Include="Pages\ActiveRace\ActiveRace.razor" />
     <None Include="wwwroot\images\Weather\Weather_0001.png" TargetPath="wwwroot\images\Weather\Weather_0001.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -86,6 +87,10 @@
     <Content Update="wwwroot\images\Weather\Weather_0999.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\Race\" />
   </ItemGroup>
 
 </Project>

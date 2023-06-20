@@ -1,4 +1,8 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using Telerik.Blazor
+@inherits ThreeSComponentBase
+
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">UniANPR</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -8,7 +12,24 @@
 </div>
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
+
+    <TelerikMenu Data="@MenuItems" 
+                 Orientation="@MenuOrientation.Vertical" 
+                 OnClick="@((MenuItem item) => OnClickHandler(item))">
+        <ItemTemplate Context="item">
+            <div class="menuItemContainer @item.Class">
+                <span class="k-icon @(item.Icon)"></span>
+                <span class="k-menu-link">@item.Text</span>
+                @if (item.Items != null && item.Items.Count() > 0)
+                {
+                    <span class="k-icon k-i-caret-alt-right"></span>
+                }
+            </div>
+        </ItemTemplate>
+    </TelerikMenu>
+
+
+@*    <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="oi oi-home" aria-hidden="true"></span> Home
@@ -39,16 +60,9 @@
                 <span class="oi oi-list-rich" aria-hidden="true"></span> Reset Password
             </NavLink>
         </div>
-    </nav>
+    </nav>*@
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
 }

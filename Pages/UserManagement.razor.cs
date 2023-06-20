@@ -2,8 +2,8 @@
 
 namespace UniANPR.Pages
 {
-    [ThreeSCAuthorize(ThreeSCRole.SuperAdmin, ThreeSCRole.UserAdmin)]
-    public partial class UserListTest
+    [ThreeSCAuthorize(ThreeSCRole.UserAdmin)]
+    public partial class UserManagement
     {
         #region Base Component Overrides
 
