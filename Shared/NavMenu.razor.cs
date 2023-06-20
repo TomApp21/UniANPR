@@ -103,10 +103,24 @@ namespace UniANPR.Shared
             // -------------------------
             MenuItems = new List<MenuItem>();
 
+            if (IsInRole(ThreeSCRole.UserAdmin) || IsInRole("Operator"))
+            {
+                MenuItem dashboardMenu = new MenuItem()
+                {
+                    Id = "dashboard",
+                    Url = "/Dashboard",
+                    Text = "Dashboard",
+                    Icon = "icn_MenuContainer icn_SiteOverview",
+                };
+
+                MenuItems.Add(dashboardMenu);
+            }
+
             // Add Site overview menus that user is authorised for 
             // ---------------------------------------------------
             if (IsInRole("Operator"))
             {
+
                 MenuItem activeRaceMenu = new MenuItem()
                 {
                     Id = "operatorActiveRace",
@@ -123,6 +137,7 @@ namespace UniANPR.Shared
                     Icon = "icn_MenuContainer icn_SiteOverview",
                 };
 
+                MenuItems.Add(activeRaceMenu);
                 MenuItems.Add(userManagementMenu);
             }
 

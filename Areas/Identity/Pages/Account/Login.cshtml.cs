@@ -55,6 +55,8 @@ namespace UniANPR.Areas.Identity.Pages.Account
         /// <returns>string - url to send user to, for example Url.Content("/Dashboard");</returns>
         protected override string SuccessLoginRedirect(ThreeSCBaseApplicationUser loggedInUser, string returnUrl)
         {
+            returnUrl = "Dashboard";
+
             // return the passed in return url, if one was specified in the login request url, else go to a start page appropriate for user's roles
             // ------------------------------------------------------------------------------------------------------------------------------------
             if (returnUrl == null)

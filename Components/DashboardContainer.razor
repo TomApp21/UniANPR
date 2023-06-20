@@ -1,0 +1,57 @@
+﻿@using Telerik.FontIcons
+@using UniANPR.Models.Shared
+@inherits ThreeSComponentBase
+
+    <TelerikTileLayout Columns="3"
+                   RowHeight="97px"
+                   Resizable="true"
+                   Reorderable="true">
+    <TileLayoutItems>
+
+        <TileLayoutItem RowSpan="4" ColSpan="2">
+            <HeaderTemplate>
+                <span class="k-card-title">Active Race</span>
+                <div style="display: inline; float: right; right: 15px; position: absolute; bottom: 7px; ">
+                    <span style="display: inline-block;"> <TelerikButton Class="threeSCTileHeaderButton" OnClick="@test" Icon="@FontIcon.Search"></TelerikButton> </span>
+                </div>
+            </HeaderTemplate>
+            <Content>
+
+            </Content>
+        </TileLayoutItem>
+
+        <TileLayoutItem HeaderText="League Table" RowSpan="7" ColSpan="1">
+            <HeaderTemplate>
+                <span class="k-card-title">League Table</span>
+                <div style="display: inline; float: right; right: 15px; position: absolute; bottom: 7px; ">
+                    <span style="display: inline-block;"> <TelerikButton Class="threeSCTileHeaderButton" OnClick="@test" Icon="@FontIcon.Search"></TelerikButton> </span>
+                </div>
+            </HeaderTemplate>
+            <Content>Regular-sized first tile.</Content>
+        </TileLayoutItem>
+
+        <TileLayoutItem  RowSpan="3" ColSpan="1">
+            <HeaderTemplate>
+                <span class="k-card-title">Pending Races</span>
+                <div style="display: inline; float: right; right: 15px; position: absolute; bottom: 7px; ">
+                    <span style="display: inline-block;"> <TelerikButton Class="threeSCTileHeaderButton" OnClick="@test" Icon="@FontIcon.Search"></TelerikButton> </span>
+                </div>
+            </HeaderTemplate>
+            <Content>You can put components in the tiles too.</Content>
+        </TileLayoutItem>
+
+        <TileLayoutItem RowSpan="3" ColSpan="1">
+            <HeaderTemplate>
+                <span class="k-card-title">Completed Races</span>
+                <div style="display: inline; float: right; right: 15px; position: absolute; bottom: 7px; ">
+                    <span style="display: inline-block;"> <TelerikButton Class="threeSCTileHeaderButton" OnClick="@AddNewRace" Icon="@FontIcon.Plus"></TelerikButton> </span>
+                </div>
+            </HeaderTemplate>
+            <Content>This tile is three rows tall.</Content>
+        </TileLayoutItem>
+
+    </TileLayoutItems>
+</TelerikTileLayout>
+
+<UniANPR.Components.PopupCreateRace @ref="_thisCreateRacePopupRef" OnRaceCreationConfirmed="@HandleRaceCreationConfirmed" OnRaceCreationCancelled="@HandleRaceCreationCancelled" />
+

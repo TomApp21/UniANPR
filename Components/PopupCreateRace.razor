@@ -1,0 +1,87 @@
+﻿@using UniANPR.Models.Shared
+@inherits ThreeSComponentBase
+
+<TelerikWindow Modal="true" Size="WindowSize.Mediun" Height="auto" Width="auto" Visible="@CreateRacePopupVisible" Resizable="false" Draggable="false">
+    <WindowTitle>Create Race</WindowTitle>
+    <WindowActions>
+        <WindowAction Name="Close" OnClick="@CancelEditing"></WindowAction>
+    </WindowActions>
+    <WindowContent>
+        <div style="padding: 20px;">
+            <TelerikForm Model="@RaceData"
+                         OnValidSubmit="@HandleValidSubmit">
+                <FormValidation>
+                    <DataAnnotationsValidator></DataAnnotationsValidator>
+                </FormValidation>
+                <FormItems>
+                    <FormItem Field="@nameof(RaceData.RaceTrackId)">
+                        <Template>
+                            <label class="">Select Track:</label>
+                            <TelerikDropDownList @bind-Value="@RaceData.RaceTrackId"
+                                                 Data="@TrackDdlData"
+                                                 ValueField="@(nameof(ValueTextModel.DdlValueField))"
+                                                 TextField="@(nameof(ValueTextModel.DdlTextField))"
+                                                 Width="100%"
+                                                 OnChange="@SelectedTrackTypeChanged">
+                            </TelerikDropDownList>
+                        </Template>
+                    </FormItem>
+
+                    <FormItem Field="@nameof(RaceData.RaceName)">
+                        <Template>
+                            <label class="">Race Name:</label>
+                            <TelerikTextBox @bind-Value="@RaceData.RaceName"></TelerikTextBox>
+                            <TelerikValidationMessage For="@(() => RaceData.RaceName)"></TelerikValidationMessage>
+                        </Template>
+                    </FormItem>
+
+                    <FormItem Field="@nameof(RaceData.Spots)">
+                        <Template>
+                            <label class="">Available Spots:</label>
+                            <TelerikNumericTextBox Width="100%" Decimals="0" Min="0" @bind-Value="@RaceData.Spots" OnChange="() => SpotsChanged()"></TelerikNumericTextBox>
+                        </Template>
+                    </FormItem>
+
+
+                    <FormItem Field="@nameof(RaceData.RequiredLaps)">
+                        <Template>
+                            <label class="">Required Laps:</label>
+                            <TelerikNumericTextBox Width="100%" Decimals="0" Min="0" @bind-Value="@RaceData.RequiredLaps" OnChange="() => LapsChanged()"></TelerikNumericTextBox>
+                            <TelerikValidationMessage For="@(() => RaceData.RequiredLaps)"></TelerikValidationMessage>
+                        </Template>
+                    </FormItem>
+
+
+                    <FormItem Field="@nameof(RaceData.StartTime)">
+                        <Template>
+                            <label class="">Start Date/Time</label>
+                            <TelerikDateTimePicker Width="100%" Min="DateTime.Now.AddHours(1)" @bind-Value="@RaceData.StartTime" OnChange="() => LapsChanged()"></TelerikDateTimePicker>
+                            <TelerikValidationMessage For="@(() => RaceData.StartTime)"></TelerikValidationMessage>
+                        </Template>
+                    </FormItem>
+
+
+                    <FormItem Field="@nameof(RaceData.EndTime)">
+                        <Template>
+                            <label class="">End Date/Time</label>
+                            <TelerikDateTimePicker Width="100%" Min="DateTime.Now.AddHours(2)" @bind-Value="@RaceData.EndTime" OnChange="() => LapsChanged()"></TelerikDateTimePicker>
+                            <TelerikValidationMessage For="@(() => RaceData.EndTime)"></TelerikValidationMessage>
+                        </Template>
+                    </FormItem>
+
+                </FormItems>
+
+                @*            <FormButtons>
+                    <div style="margin:auto; padding-bottom: 10px;">
+                    <TelerikButton Class="taskPopupButton threeSCButton" OnClick="@CancelEditing" >@GetLocalisedString("CancelButtonText")</TelerikButton>
+                    <TelerikButton Class="taskPopupButton threeSCButton" >@GetLocalisedString("ConfirmButtonText")</TelerikButton>
+                    </div>
+                    </FormButtons>*@
+
+
+
+            </TelerikForm>
+        </div>
+
+    </WindowContent>
+</TelerikWindow>
