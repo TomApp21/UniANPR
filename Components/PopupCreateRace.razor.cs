@@ -87,8 +87,7 @@ namespace UniANPR.Components
         public async Task ShowCreateRaceForm()
         {
             InitializeRaceTrackDdl();
-
-
+            RaceData = new Race_VM();
 
 
             CreateRacePopupVisible = true;
@@ -179,7 +178,7 @@ namespace UniANPR.Components
         {
             OnRaceCreationCancelled?.Invoke();
             CreateRacePopupVisible = false;
-            RaceData = null;
+            RaceData = new Race_VM();
             StateHasChanged();
         }
 

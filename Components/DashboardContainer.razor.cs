@@ -1,4 +1,6 @@
 ﻿using DemoANPR.Models.Components;
+using UniANPR.Models;
+using UniANPR.Utility;
 
 namespace UniANPR.Components
 {
@@ -7,6 +9,7 @@ namespace UniANPR.Components
         #region Declarations
 
         private PopupCreateRace _thisCreateRacePopupRef { get; set; }
+        private PopupCreateTrack _thisCreateTrackPopupRef { get; set; }
 
 
         #endregion
@@ -37,13 +40,21 @@ namespace UniANPR.Components
 
         #region Event Handlers
 
-        protected void AddNewRace()
+        protected void ScheduleRace()
         {
             _thisCreateRacePopupRef.ShowCreateRaceForm();
+        }
+
+        protected void AddNewTrack()
+        {
+            _thisCreateTrackPopupRef.ShowCreateTrackForm();
 
 
 
         }
+
+
+
 
         #endregion
 
@@ -62,7 +73,57 @@ namespace UniANPR.Components
 
         }
 
+        private void HandleTrackCreationConfirmed()
+        {
+            string trackToCreate = _thisCreateTrackPopupRef.TrackData.TrackName;
+
+            // Check service for existing name 
+            // Add To DAL
+
+        }
+
+        private void HandleTrackCreationCancelled()
+        {
+
+        }
+
+
+      
+
+            // service check if exists
+            // Add to DAL
+
         #endregion
+
+
+        private TheosAPI thisAPI = new TheosAPI();
+        protected async void TestAPI()
+        {
+            List<NumberPlate> detectedObjects = new List<NumberPlate>();
+            string downloadsFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Downloads\\testANPR";
+
+            DirectoryInfo directoryInfo = new DirectoryInfo(downloadsFolder);
+            FileInfo[] files = directoryInfo.GetFiles("*.jpg"); // Change the file extension to match your image format
+
+            if (files.Length > 0)
+            {
+                FileInfo imageFile = files[0]; // Assuming you want to retrieve the first image file
+                Console.WriteLine("Image file found: " + imageFile.FullName);
+
+                DateTime timeBeforeRequest = DateTime.Now;
+                detectedObjects = await thisAPI.Detect(imageFile, confThres: 0.25f, iouThres: 0.45f, ocrModel: "medium", ocrClasses: "numberplate", retries: 5, delay: 2);
+                TimeSpan elapsedTime = (DateTime.Now - timeBeforeRequest);
+                int ms = (int)elapsedTime.TotalMilliseconds;
+
+                // Perform further processing with the image file
+            }
+            else
+            {
+                Console.WriteLine("No image files found in the Downloads folder.");
+            }
+        }
+
+
 
 
     }

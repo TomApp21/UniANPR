@@ -24,7 +24,7 @@
             <HeaderTemplate>
                 <span class="k-card-title">League Table</span>
                 <div style="display: inline; float: right; right: 15px; position: absolute; bottom: 7px; ">
-                    <span style="display: inline-block;"> <TelerikButton Class="threeSCTileHeaderButton" OnClick="@test" Icon="@FontIcon.Search"></TelerikButton> </span>
+                    <span style="display: inline-block;"> <TelerikButton Class="threeSCTileHeaderButton" OnClick="@TestAPI" Icon="@FontIcon.Search"></TelerikButton> </span>
                 </div>
             </HeaderTemplate>
             <Content>Regular-sized first tile.</Content>
@@ -44,7 +44,9 @@
             <HeaderTemplate>
                 <span class="k-card-title">Completed Races</span>
                 <div style="display: inline; float: right; right: 15px; position: absolute; bottom: 7px; ">
-                    <span style="display: inline-block;"> <TelerikButton Class="threeSCTileHeaderButton" OnClick="@AddNewRace" Icon="@FontIcon.Plus"></TelerikButton> </span>
+                    <span style="display: inline-block;"> <TelerikButton Class="threeSCTileHeaderButton" OnClick="@AddNewTrack" Icon="@FontIcon.Plus">Add Track</TelerikButton> </span>
+                                    <span style="display: inline-block;"> <TelerikButton Class="threeSCTileHeaderButton" OnClick="@ScheduleRace" Icon="@FontIcon.Plus">Schedule Race</TelerikButton> </span>
+
                 </div>
             </HeaderTemplate>
             <Content>This tile is three rows tall.</Content>
@@ -54,4 +56,5 @@
 </TelerikTileLayout>
 
 <UniANPR.Components.PopupCreateRace @ref="_thisCreateRacePopupRef" OnRaceCreationConfirmed="@HandleRaceCreationConfirmed" OnRaceCreationCancelled="@HandleRaceCreationCancelled" />
+<UniANPR.Components.PopupCreateTrack @ref="_thisCreateTrackPopupRef" OnTrackCreationConfirmed="@HandleTrackCreationConfirmed" OnTrackCreationCancelled="@HandleTrackCreationCancelled" />
 

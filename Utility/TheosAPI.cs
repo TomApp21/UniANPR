@@ -6,7 +6,7 @@ namespace UniANPR.Utility
     public class TheosAPI : IDisposable
     {
         private readonly HttpClient httpClient;
-        private const string URL = "https://inf-434b2b0a-e5a3-4742-869f-c3b958559af8-no4xvrhsfq-uc.a.run.app/detect"; // copy and paste your URL here
+        private const string URL = "https://inf-90d32d28-70d9-49ae-b6e7-03dd2552b374-no4xvrhsfq-uc.a.run.app/detect"; // copy and paste your URL here
         private const string FALLBACK_URL = ""; // copy and paste your fallback URL here
 
         public TheosAPI()
@@ -14,8 +14,9 @@ namespace UniANPR.Utility
             httpClient = new HttpClient();
         }
 
-        public async Task Detect(FileInfo imageFile, string url = URL, float confThres = 0.25f, float iouThres = 0.45f, string ocrModel = null, string ocrClasses = null, string ocrLanguage = null, int retries = 10, int delay = 0)
+        public async Task<List<NumberPlate>> Detect(FileInfo imageFile, string url = URL, float confThres = 0.25f, float iouThres = 0.45f, string ocrModel = null, string ocrClasses = null, string ocrLanguage = null, int retries = 10, int delay = 0)
         {
+            List<NumberPlate> rtnObjects = new List<NumberPlate>();
             MultipartFormDataContent formData = new MultipartFormDataContent();
             formData.Add(new StreamContent(File.OpenRead(imageFile.FullName)), "image", imageFile.Name);
             formData.Add(new StringContent(confThres.ToString()), "conf_thres");
@@ -41,10 +42,7 @@ namespace UniANPR.Utility
                 string responseData = await response.Content.ReadAsStringAsync();
                 
                 // Handle the response data
-                List<NumberPlate> numberPlates = JsonConvert.DeserializeObject<List<NumberPlate>>(responseData);
-
-                // Access the first (and only) number plate in the list
-                NumberPlate detectedPlate = numberPlates[0];
+                rtnObjects = JsonConvert.DeserializeObject<List<NumberPlate>>(responseData);
             }
             catch (HttpRequestException ex)
             {
@@ -76,6 +74,7 @@ namespace UniANPR.Utility
                     // Handle the case when retries are exhausted
                 }
             }
+            return rtnObjects;
         }
 
         public void Dispose()

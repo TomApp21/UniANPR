@@ -1,0 +1,39 @@
+﻿@using UniANPR.Models.Shared
+@inherits ThreeSComponentBase
+
+<TelerikWindow Modal="true" Size="WindowSize.Mediun" Height="auto" Width="auto" Visible="@CreateTrackPopupVisible" Resizable="false" Draggable="false">
+    <WindowTitle>Create Track</WindowTitle>
+    <WindowActions>
+        <WindowAction Name="Close" OnClick="@CancelEditing"></WindowAction>
+    </WindowActions>
+    <WindowContent>
+        <div style="padding: 20px;">
+            <TelerikForm Model="@RaceData"
+                         OnValidSubmit="@HandleValidSubmit">
+                <FormValidation>
+                    <DataAnnotationsValidator></DataAnnotationsValidator>
+                </FormValidation>
+                <FormItems>
+                    <FormItem Field="@nameof(TrackData.TrackName)">
+                        <Template>
+                            <TelerikTextBox @bind-Value="@TrackData.TrackName"></TelerikTextBox>
+                            <TelerikValidationMessage For="@(() => TrackData.TrackName)"></TelerikValidationMessage>
+                        </Template>
+                    </FormItem>
+
+                </FormItems>
+
+                @*            <FormButtons>
+                    <div style="margin:auto; padding-bottom: 10px;">
+                    <TelerikButton Class="taskPopupButton threeSCButton" OnClick="@CancelEditing" >@GetLocalisedString("CancelButtonText")</TelerikButton>
+                    <TelerikButton Class="taskPopupButton threeSCButton" >@GetLocalisedString("ConfirmButtonText")</TelerikButton>
+                    </div>
+                    </FormButtons>*@
+
+
+
+            </TelerikForm>
+        </div>
+
+    </WindowContent>
+</TelerikWindow>

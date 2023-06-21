@@ -11,8 +11,14 @@ namespace DemoANPR.Models.Components
         [Required(ErrorMessage = "You must specify a race name.")]
         public string RaceName { get; set;}
 
+        [Display(Name = "Race Track:")]
+        [Range(1, Int32.MaxValue, ErrorMessage = "The field must not be empty.")]
         public int RaceTrackId { get; set; }
+
+        [Display(Name = "Required Laps:")]
+        [Range(1, Int32.MaxValue, ErrorMessage = "The field {0} must be greater than {1}.")]
         public int Spots { get; set; }
+
         public DateTime StartTime { get; set; } = DateTime.Now.AddHours(1);
         public DateTime EndTime { get; set; } = DateTime.Now.AddHours(2);
         public RaceStatus RaceStatus { get; set; }
