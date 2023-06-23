@@ -4,11 +4,11 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using ThreeSC.NetStandardLib.StandardTools.Interfaces;
 
-namespace UniANPR.Services.Race.DAL
+namespace UniANPR.Services.Race
 {
-    public partial class RaceService 
+    public partial class RaceService
     {
-        private class RaceDAL
+        private class RaceService_DAL
         {
             #region Private Declarations
 
@@ -27,7 +27,7 @@ namespace UniANPR.Services.Race.DAL
             /// </summary>
             /// <param name="applicationLogger">Three SC Application logger to use for errors</param>
             /// <param name="supervisorySystemDatabaseConnectionString">Connection string for the abds supervisory database</param>
-            internal RaceDAL(IThreeSCApplicationLogger applicationLogger, string supervisorySystemDatabaseConnectionString)
+            internal RaceService_DAL(IThreeSCApplicationLogger applicationLogger, string supervisorySystemDatabaseConnectionString)
             {
                 _applicationLogger = applicationLogger;
                 _supervisorySystemDatabaseConnectionString = supervisorySystemDatabaseConnectionString;
@@ -79,27 +79,65 @@ namespace UniANPR.Services.Race.DAL
                 }
             }
 
-            internal List<RaceTrack_DM> GetAllRaceTracks()
+            //internal List<RaceTrack_DM> GetAllRaceTracks()
+            //{
+            //    List<RaceTrack_DM> theseResults;
+
+            //    string query = "SELECT " +
+            //                    "[Id]," +
+            //                    "[TrackName] " +
+            //                    "FROM [dbo].[RaceTrack] ";
+
+            //    try
+            //    {
+            //        theseResults = SQLHelper.ReadTableFromDatabaseIntoList<RaceTrack_DM>(_supervisorySystemDatabaseConnectionString, query);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _applicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, $"Failed to retrieve race track definitions.", ex, null);
+            //        theseResults = new List<RaceTrack_DM>();
+            //    }
+
+            //    return theseResults;
+            //}
+
+                        /// <summary>
+            /// Log a race lap
+            /// </summary>
+            internal bool AddTrack(string trackName)
             {
-                List<RaceTrack_DM> theseResults;
-
-                string query = "SELECT " +
-                                "[Id]," +
-                                "[TrackName] " +
-                                "FROM [dbo].[RaceTrack] ";
-
+                bool blnSuccess = false;
                 try
                 {
-                    theseResults = SQLHelper.ReadTableFromDatabaseIntoList<RaceTrack_DM>(_supervisorySystemDatabaseConnectionString, query);
+                    using (SqlConnection connection = new SqlConnection(_supervisorySystemDatabaseConnectionString))
+                    {
+                        String query = "INSERT INTO dbo.TrackName (" +
+                                       "[TrackName]) " +
+                                       "VALUES (" +
+                                       "@TrackName)";
+
+
+                        using (SqlCommand command = new SqlCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@RaceId", trackName);
+
+                            if (connection.State != ConnectionState.Open)
+                            {
+                                connection.Open();
+                            }
+                            command.ExecuteScalar();
+                            blnSuccess = true;
+                        }
+                    }
+
                 }
                 catch (Exception ex)
                 {
-                    _applicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, $"Failed to retrieve race track definitions.", ex, null);
-                    theseResults = new List<RaceTrack_DM>();
+                    _applicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, String.Empty, ex, null);
                 }
-
-                return theseResults;
+                return blnSuccess;
             }
+
 
             #endregion
         }

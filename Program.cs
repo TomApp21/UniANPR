@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Components.Authorization;
 using ThreeSC.Net6Lib.BlazorTools.Models;
 using ThreeSC.Net6Lib.BlazorTools.ServiceExtensions;
 using UniANPR.Areas.Identity;
+using UniANPR.Interfaces;
 using UniANPR.Models.ThreeSCBaseImplementations;
 using UniANPR.Services;
+using UniANPR.Services.Race;
 using static UniANPR.Models.ThreeSCBaseImplementations.TestAppUserAuditEnum;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +24,9 @@ builder.Services.AddTelerikBlazor();
 // add ThreeSC Blazor Nuget services
 // ---------------------------------
 builder.Services.AddThreeSCBlazor<TestAppUser, _enmTestAppEnum>(builder.Configuration);
+
+builder.Services.AddSingleton<IRaceService, RaceService>();
+builder.Services.AddHostedService<IRaceService>(provider => provider.GetRequiredService<IRaceService>());
 
 // add ABDS Specific services
 // --------------------------

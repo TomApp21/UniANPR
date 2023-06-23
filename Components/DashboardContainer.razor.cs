@@ -1,16 +1,25 @@
 ﻿using DemoANPR.Models.Components;
+using Microsoft.AspNetCore.Components;
+using UniANPR.Interfaces;
 using UniANPR.Models;
+using UniANPR.Models.Services;
 using UniANPR.Utility;
 
 namespace UniANPR.Components
 {
   public partial class DashboardContainer
     {
+        #region Injections
+
+        [Inject] 
+        IRaceService _thisRaceService { get; set; }
+
+        #endregion
+
         #region Declarations
 
         private PopupCreateRace _thisCreateRacePopupRef { get; set; }
         private PopupCreateTrack _thisCreateTrackPopupRef { get; set; }
-
 
         #endregion
 
@@ -77,9 +86,20 @@ namespace UniANPR.Components
         {
             string trackToCreate = _thisCreateTrackPopupRef.TrackData.TrackName;
 
-            // Check service for existing name 
-            // Add To DAL
+            if (_thisRaceService.CheckIfTrackNameExists(trackToCreate))
+            {
+                // Alert user
+                // Show Telerik Notification
+            }
+            else
+            {
+                bool blnSucess = _thisRaceService.AddNewTrack(trackToCreate);
 
+                if (blnSucess)
+                {
+                    // Show Notification
+                }
+            }
         }
 
         private void HandleTrackCreationCancelled()
