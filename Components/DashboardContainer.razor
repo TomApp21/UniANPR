@@ -2,6 +2,10 @@
 @using UniANPR.Models.Shared
 @inherits ThreeSComponentBase
 
+<TelerikNotification @ref="NotificationReference"
+                         HorizontalPosition="@NotificationHorizontalPosition.Center"
+                         VerticalPosition="@NotificationVerticalPosition.Top"></TelerikNotification>
+
     <TelerikTileLayout Columns="3"
                    RowHeight="97px"
                    Resizable="true"
@@ -37,7 +41,7 @@
                     <span style="display: inline-block;"> <TelerikButton Class="threeSCTileHeaderButton" OnClick="@test" Icon="@FontIcon.Search"></TelerikButton> </span>
                 </div>
             </HeaderTemplate>
-            <Content>You can put components in the tiles too.</Content>
+            <Content><GridPendingRaces /></Content>
         </TileLayoutItem>
 
         <TileLayoutItem RowSpan="3" ColSpan="1">

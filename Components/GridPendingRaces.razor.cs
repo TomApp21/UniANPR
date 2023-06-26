@@ -1,7 +1,9 @@
 ﻿using DemoANPR.Models.Components;
+using DemoANPR.Models.Services;
 using Microsoft.AspNetCore.Components;
 using Telerik.Blazor;
 using Telerik.Blazor.Components;
+using UniANPR.Enum;
 using UniANPR.Interfaces;
 using UniANPR.Models;
 using UniANPR.Models.Services;
@@ -9,7 +11,7 @@ using UniANPR.Utility;
 
 namespace UniANPR.Components
 {
-  public partial class DashboardContainer
+  public partial class GridPendingRaces
     {
         #region Injections
 
@@ -20,10 +22,13 @@ namespace UniANPR.Components
 
         #region Declarations
 
+        int subscriberId = 0;
+
         private PopupCreateRace _thisCreateRacePopupRef { get; set; }
         private PopupCreateTrack _thisCreateTrackPopupRef { get; set; }
         TelerikNotification NotificationReference { get; set; }
 
+        private List<Race_VM> _pendingRaceData { get; set; }
 
         #endregion
 
@@ -34,6 +39,7 @@ namespace UniANPR.Components
         /// </summary>
         protected override void InitialiseComponentStaticData()
         {
+            subscriberId = _thisRaceService.AddSubscriber_PendingRaceDataChanged(HandleNewPendingRaceDataReceived);
         }
 
         protected override void OnFirstRender()
@@ -46,28 +52,50 @@ namespace UniANPR.Components
 
         #endregion
 
-        private void test()
-        {
+        #region Handle Pending Race Data Changed
 
+        /// <summary>
+        /// Published site data has changed (or set on first subscription)
+        /// Create the map and layer data from teh published site details
+        /// </summary>
+        /// <param name="siteConfigurationData"></param>
+        private void HandleNewPendingRaceDataReceived(List<Race_SM> pendingRaceData)
+        {
+            InvokeAsync(() =>
+            {
+                
+                _pendingRaceData = (from rd in pendingRaceData
+                                     select new Race_VM()
+                                     {
+                                         RaceId = rd.RaceId,
+                                         RaceTrackId = rd.RaceTrackId,
+                                         RaceTrackName = _thisRaceService.allTrackData.Where(x => x.TrackId == rd.RaceTrackId).FirstOrDefault().TrackName,
+                                         RequiredLaps = rd.RequiredLaps,
+                                         Spots = rd.Spots,
+                                         StartTime = rd.StartTime,
+                                         EndTime = rd.EndTime,
+                                         RaceName = rd.RaceName,
+                                         RaceStatus = (RaceStatus)rd.RaceStatus,
+                                         RegisteredParticipants = rd.ActiveParticipants,
+                                     }).ToList();
+
+                StateHasChanged();
+            });
         }
+
+        #endregion
 
         #region Event Handlers
 
-        protected void ScheduleRace()
+        protected void EditPendingRace()
         {
             _thisCreateRacePopupRef.ShowCreateRaceForm();
         }
 
-        protected void AddNewTrack()
+        protected void DeletePendingRace()
         {
-            _thisCreateTrackPopupRef.ShowCreateTrackForm();
-
-
-
+            //_thisCreateTrackPopupRef.ShowCreateTrackForm();
         }
-
-
-
 
         #endregion
 
@@ -139,32 +167,6 @@ namespace UniANPR.Components
         }
 
 
-        private TheosAPI thisAPI = new TheosAPI();
-        protected async void TestAPI()
-        {
-            List<NumberPlate> detectedObjects = new List<NumberPlate>();
-            string downloadsFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Downloads\\testANPR";
-
-            DirectoryInfo directoryInfo = new DirectoryInfo(downloadsFolder);
-            FileInfo[] files = directoryInfo.GetFiles("*.jpg"); // Change the file extension to match your image format
-
-            if (files.Length > 0)
-            {
-                FileInfo imageFile = files[0]; // Assuming you want to retrieve the first image file
-                Console.WriteLine("Image file found: " + imageFile.FullName);
-
-                DateTime timeBeforeRequest = DateTime.Now;
-                detectedObjects = await thisAPI.Detect(imageFile, confThres: 0.25f, iouThres: 0.45f, ocrModel: "medium", ocrClasses: "numberplate", retries: 5, delay: 2);
-                TimeSpan elapsedTime = (DateTime.Now - timeBeforeRequest);
-                int ms = (int)elapsedTime.TotalMilliseconds;
-
-                // Perform further processing with the image file
-            }
-            else
-            {
-                Console.WriteLine("No image files found in the Downloads folder.");
-            }
-        }
 
 
 

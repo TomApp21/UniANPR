@@ -1,11 +1,11 @@
-﻿namespace UniANPR.Services.Race.DAL
+﻿namespace UniANPR.Services.Race
 {
     public partial class RaceService
     {
         private class RaceTrack_DM
         {
-            private int Id { get; set; }
-            private string TrackName { get; set; }
+            public int Id { get; set; }
+            public string TrackName { get; set; }
         }
     }
 }

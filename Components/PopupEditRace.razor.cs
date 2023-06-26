@@ -1,14 +1,17 @@
 ﻿using DemoANPR.Models.Components;
 using Microsoft.AspNetCore.Components;
 using UniANPR.Interfaces;
+using UniANPR.Models.Components;
 using UniANPR.Models.Services;
 using UniANPR.Models.Shared;
 
+using ThreeSC.NetStandardLib.StandardTools.Interfaces;
+
 namespace UniANPR.Components
 {
-    public partial class PopupCreateRace
+    public partial class PopupEditRace
     {
-        #region 
+        #region Injections
         [Inject]
         IRaceService thisRaceService { get; set; }
         #endregion
@@ -40,23 +43,12 @@ namespace UniANPR.Components
 
         #region Declarations
 
-        public Race_VM RaceData { get; set; }
+        private List<Participant_VM> _raceParticipantData { get; set; }
 
-        protected bool CreateRacePopupVisible { get; set; }
+        protected bool EditRacePopupVisible { get; set; }
         protected bool ConfirmBtnEnabled { get; set; }
         protected bool UserIdExists { get; set; }
 
-        protected List<ValueTextModel> TrackDdlData { get; set; }
-
-
-
-        /// <summary>
-        /// Sets minimum speed limit depending on the geofence type selected 
-        /// to prevent user from assigning 0 speed limit when zone = SLZ
-        /// </summary>
-        protected int MinSpeedLimit { get; set; }
-
-        public bool ValidSubmit = false;
         #endregion
 
         #region Intialization
@@ -65,7 +57,7 @@ namespace UniANPR.Components
         /// </summary>
         protected override void InitialiseComponentStaticData()
         {
-            RaceData = new Race_VM();
+            //RaceData = new Race_VM();
 
         }
 
@@ -94,11 +86,11 @@ namespace UniANPR.Components
         /// <returns></returns>
         public async Task ShowCreateRaceForm()
         {
-            InitializeRaceTrackDdl();
-            RaceData = new Race_VM();
+            //ParticipantData = thisRaceService.
 
+            thisThreeSCUserSessionReader.DisplayNameForUserId(CurrentUserId);
 
-            CreateRacePopupVisible = true;
+            EditRacePopupVisible = true;
             ConfirmBtnEnabled = false;
 
         }

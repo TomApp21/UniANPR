@@ -1,0 +1,39 @@
+﻿@using DemoANPR.Models.Components
+@using Telerik.FontIcons
+@using UniANPR.Models.Shared
+@inherits ThreeSComponentBase
+
+
+<TelerikGrid Data=@_pendingRaceData
+             Height="100%"
+             Class="activeRaceGrid">
+                <RowTemplate Context="data">
+                  
+                    <td>@data.RaceName</td>
+                    <td>@data.RaceTrackName</td>
+                    <td>@data.RegisteredParticipants/@data.Spots</td>
+
+                    <td>
+
+                        @if(data.RegistrationClosed)
+                        {
+                           <TelerikButton Class="threeSCTileHeaderButton" OnClick="@EditPendingRace" Icon="@FontIcon.Pencil"></TelerikButton> 
+                        }
+                        <TelerikButton Class="threeSCTileHeaderButton" OnClick="DeletePendingRace" Icon="@FontIcon.X"></TelerikButton> 
+                    
+                    </td>
+                </RowTemplate>
+    <GridColumns>
+
+        <GridColumn Field=@nameof(Race_VM.RaceName)
+                    Title="Race Name" Width="55px" />
+        <GridColumn Field=@nameof(Race_VM.RaceTrackName)
+                    Title="Track" Width="120px" />
+        <GridColumn Field=@nameof(Race_VM.RegisteredParticipants)
+                    Title="Participants" Width="80px" />
+        <GridColumn Field="Actions"
+                    Title="Actions" Width="80px" />
+
+    </GridColumns>
+
+</TelerikGrid>

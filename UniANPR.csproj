@@ -45,6 +45,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.10" />
     <PackageReference Include="Telerik.UI.for.Blazor" Version="4.1.0" />
     <PackageReference Include="ThreeSC.Net6Lib.BlazorTools" Version="1.4.24" />
+    <PackageReference Include="ThreeSC.NetCoreLib.ThreeSCUserSessionManager" Version="1.1.34" />
   </ItemGroup>
 
   <ItemGroup>

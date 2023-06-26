@@ -1,6 +1,11 @@
 ﻿using UniANPR.Interfaces;
 using ThreeSC.Net6Lib.BlazorTools.Services;
 using UniANPR.Models.Services;
+using ThreeSC.NetStandardLib.StandardTools.Interfaces;
+using ABDS.Supervisory.GUI.Models.Configuration;
+using DemoANPR.Models.Components;
+using DemoANPR.Models.Services;
+using UniANPR.Enum;
 
 namespace UniANPR.Services.Race
 {
@@ -17,25 +22,53 @@ namespace UniANPR.Services.Race
         /// <param name="vehicleContainerAllocationData"></param>
         public delegate void TrackDataChangeDelegate (List<Track_SM> trackData);
 
+        public delegate void PendingRaceDataChangeDelegate (List<Race_SM> pendingRaceData);
+
+
         #endregion
 
         #region Delegate & Subscriber Private Declarations
 
         private Dictionary<int, TrackDataChangeDelegate> _allTrackDataChangedDelegates; 
+        private Dictionary<int, PendingRaceDataChangeDelegate> _allPendingRaceDataChangedDelegates; 
+
         #endregion
 
         #region Declarations
-        private List<Track_SM> _allTrackNameData { get; set; }
+        public List<Track_SM> allTrackData { get; set; }
+
+        public List<Race_SM> allRaceData { get; set; }
+        public List<Race_SM> allPendingRaceData { get; set; }
+
 
         private RaceService_DAL _thisRaceService_DAL;
 
 
         #endregion
 
+        #region Private declarations
+
+        private IThreeSCApplicationLogger _thisThreeSCApplicationLogger;
+        //private IThreeSCUserAuditLogger<_enmABDSGUIUserAuditEnum
+
+            #endregion  
+
         #region Properties
         #endregion
 
         #region Constructor
+
+        public RaceService(IThreeSCApplicationLogger thisThreeSCApplicationLogger, IConfiguration configuration)
+        {
+            _thisThreeSCApplicationLogger = thisThreeSCApplicationLogger;
+
+            UniANPROptions thisConfig = new UniANPROptions(configuration);
+
+            _thisRaceService_DAL = new RaceService_DAL(_thisThreeSCApplicationLogger, thisConfig.DatabaseConnectionString);
+
+            _allPendingRaceDataChangedDelegates = new Dictionary<int, PendingRaceDataChangeDelegate>();
+            _allTrackDataChangedDelegates = new Dictionary<int, TrackDataChangeDelegate>();
+        }
         #endregion
 
         #region Hosted service start stop implementations
@@ -44,11 +77,13 @@ namespace UniANPR.Services.Race
         /// On being started by the webApp service, read all current data from the database
         /// </summary>
         /// <param name="stoppingToken"></param>
+        /// 
         /// <returns></returns>
         public Task StartAsync(CancellationToken stoppingToken)
         {
             //InitialisePublishedGeofenceData();
-            InitialiseHistoricRaceData();
+            InitialiseTrackData();
+            InitialiseRaceData();
 
             return Task.CompletedTask;
         }
@@ -64,59 +99,53 @@ namespace UniANPR.Services.Race
         }
         #endregion
 
+        #region Initialise Service Data
+
+        /// <summary>
+        ///  Gets track data on start-up
+        /// </summary>
+        private void InitialiseTrackData()
+        {
+            List<RaceTrack_DM> trackData = _thisRaceService_DAL.GetAllRaceTracks();
+
+            allTrackData = (from td in trackData
+                                 select new Track_SM()
+                                 {
+                                     TrackId = td.Id ,
+                                     TrackName = td.TrackName
+                                 }).ToList();
+        }
+
+        
+        /// <summary>
+        ///  Gets track data on start-up
+        /// </summary>
+        private void InitialiseRaceData()
+        {
+            List<Race_DM> raceData = _thisRaceService_DAL.GetAllRaces();
+
+            allRaceData = (from rd in raceData
+                                 select new Race_SM()
+                                 {
+                                     RaceId = rd.RaceId,
+                                     RaceTrackId = rd.RaceTrackId,
+                                     RequiredLaps = rd.RequiredLaps,
+                                     Spots = rd.SpotLimit,
+                                     StartTime = rd.StartTime,
+                                     EndTime = rd.EndTime,
+                                     RaceName = rd.RaceName,
+                                     RaceStatus = (RaceStatus)rd.RaceStatusEnumValue,
+                                 }).ToList();
+        
+            // populate active participants
+        }
+
+
+
+        #endregion
+
         #region Private initialise geofence and segment published data
-        /// <summary>
-        /// Inityialise published geofence data for GUI and for vehicles
-        /// on startup or on re-publish
-        /// </summary>
-        private void InitialisePublishedGeofenceData()
-        {
-            //List<Geofence_DM> geofenceData = _thisSiteDetailsDAL.GetAllGeofence(true);
 
-            //_publishedSiteConfigurationDetails.GeofenceDict = (from gd in geofenceData
-            //                                                   select new Geofence()
-            //                                                   {
-            //                                                       UserGeofenceId = gd.UserGeofenceId,
-            //                                                       VehicleGeofenceId = gd.VehicleGeofenceId,
-            //                                                       IsArchived = gd.IsArchived,
-            //                                                       IsContained = gd.IsContained,
-            //                                                       SegmentClash = gd.SegmentClash,
-            //                                                       SpeedLimit = gd.SpeedLimit,
-            //                                                       WellKnownBinary = gd.WellKnownBinary,
-            //                                                       GeofenceType = (GeofenceType)gd.GeofenceType,
-            //                                                   }).ToDictionary(key => key.UserGeofenceId);
-
-
-
-
-        }
-
-        /// <summary>
-        /// Initialise published segment data for GUI and for vehicles
-        /// on startup or on re-publish
-        /// </summary>
-        private void InitialiseHistoricRaceData()
-        {
-            //List<Segment_DM> segmentData = _thisSiteDetailsDAL.GetAllSegments(true);
-
-            //_publishedSiteConfigurationDetails.SegmentDict = (from sd in segmentData
-            //                                                  orderby sd.Id
-            //                                                  select new Segment()
-            //                                                  {
-            //                                                      UserSegmentId = sd.UserSegmentId,
-            //                                                      VehicleSegmentId = sd.VehicleSegmentId,
-            //                                                      SegmentType = (SegmentType)sd.SegmentType,
-            //                                                      LeftWidth = sd.LeftWidth,
-            //                                                      RightWidth = sd.RightWidth,
-            //                                                      SpeedLimit = sd.SpeedLimit,
-            //                                                      IsArchived = sd.IsArchived,
-            //                                                      PublishTimeUTC = sd.PublishTimeUTC,
-            //                                                      WellKnownBinary = sd.WellKnownBinary,
-            //                                                  }).ToDictionary(k => k.UserSegmentId);
-
-
-
-        }
         #endregion
 
         #region AllVehicleIds Subscribe, call delegates and unsubscribe methods
@@ -130,7 +159,7 @@ namespace UniANPR.Services.Race
         {
             int subscriberId = ThreadSafeAddToSubscriberDictionary<TrackDataChangeDelegate>(_allTrackDataChangedDelegates, newHandler);
 
-            Task.Run(() => { newHandler.Invoke(_allTrackNameData.ToList()); });
+            Task.Run(() => { newHandler.Invoke(allTrackData.ToList()); });
 
             return subscriberId;
         }
@@ -158,7 +187,59 @@ namespace UniANPR.Services.Race
                     {
                         try
                         {
-                            _allTrackDataChangedDelegates[subscriberId].Invoke(_allTrackNameData.ToList());
+                            _allTrackDataChangedDelegates[subscriberId].Invoke(allTrackData.ToList());
+                        }
+                        catch (Exception ex)
+                        {
+                            //_thisThreeSCApplicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, "subscriberId[" + subscriberId.ToString() + "]", ex, null);
+                        }
+                    });
+                }
+            }
+        }
+        #endregion
+
+
+        #region AllVehicleIds Subscribe, call delegates and unsubscribe methods
+
+        /// <summary>
+        /// Register a delegate to receive all changes to the list of vehicle ids
+        /// </summary>
+        /// <param name="newAllVehicleIdsChangedHandler">Delegate that will get called on Add and on all changes until unsubscribed</param>
+        /// <returns>The subscriber id associated with this registration</returns>
+        public int AddSubscriber_PendingRaceDataChanged(PendingRaceDataChangeDelegate newHandler)
+        {
+            int subscriberId = ThreadSafeAddToSubscriberDictionary<PendingRaceDataChangeDelegate>(_allPendingRaceDataChangedDelegates, newHandler);
+
+            Task.Run(() => { newHandler.Invoke(allRaceData.Where(x => x.StartTime > DateTime.Now).ToList()); });
+
+            return subscriberId;
+        }
+
+        /// <summary>
+        /// Remove specified subscriber to AllVehicleIdsChanged
+        /// </summary>
+        /// <param name="subscriberId">The subscriber id associated with this registration</param>
+        public void RemoveSubscriber_PendingRaceDataChanged(int subscriberId)
+        {
+            ThreadSafeRemoveFromSubscriberDictionary<PendingRaceDataChangeDelegate>(_allPendingRaceDataChangedDelegates, subscriberId);
+        }
+
+
+        /// <summary>
+        /// Inform all subscribers of a change
+        /// </summary>
+        private void SendToAllPendingRaceDataChangedDelegates()
+        {
+            lock (_allPendingRaceDataChangedDelegates)
+            {
+                foreach (int subscriberId in _allPendingRaceDataChangedDelegates.Keys)
+                {
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            _allPendingRaceDataChangedDelegates[subscriberId].Invoke(allRaceData.Where(x => x.StartTime > DateTime.Now).ToList());
                         }
                         catch (Exception ex)
                         {
@@ -180,7 +261,7 @@ namespace UniANPR.Services.Race
         /// <returns></returns>
         public bool CheckIfTrackNameExists(string newTrackName)
         {
-            return _allTrackNameData.Select(x => x.TrackName).Contains(newTrackName) ? true : false;
+            return allTrackData.Select(x => x.TrackName).Contains(newTrackName) ? true : false;
         }
 
         #endregion
@@ -201,10 +282,48 @@ namespace UniANPR.Services.Race
                 SendToAllTrackDataChangedDelegates();
             }
 
+            return blnSuccess;
+        }
+
+        public bool ScheduleNewRace(Race_VM raceToCreate)
+        {
+            bool blnSuccess = false;
+
+            Race_SM thisRace = new Race_SM()
+            {
+                RaceName = raceToCreate.RaceName,
+                RequiredLaps = raceToCreate.RequiredLaps,
+                Spots = raceToCreate.Spots,
+                StartTime = raceToCreate.StartTime,
+                EndTime = raceToCreate.EndTime,
+                RaceTrackId = raceToCreate.RaceTrackId,
+                RaceStatus = Enum.RaceStatus.RegistrationActive
+            };
+
+            blnSuccess = _thisRaceService_DAL.ScheduleNewRace(thisRace);
+
+            if (blnSuccess)
+            {
+                InitialiseRaceData();
+                SendToAllPendingRaceDataChangedDelegates();
+            }
 
             return blnSuccess;
         }
 
+        public bool ProcessParticipantAwaitingRegistration(int participantId, int raceId, bool approveRacer)
+        {
+            bool blnSuccess = false;
+
+            blnSuccess = _thisRaceService_DAL.ProcessParticipantAwaitingRegistration(participantId, raceId, approveRacer);
+
+            if (blnSuccess)
+            {
+
+            }
+
+            return blnSuccess;
+        }
 
         #endregion
 
