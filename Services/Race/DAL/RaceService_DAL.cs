@@ -299,7 +299,7 @@ namespace UniANPR.Services.Race
                     }
                     catch (Exception ex)
                     {
-                        _applicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, $"unexpected error creating vehicleId{vehicleId}", ex, useridForLogging);
+                        //_applicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, $"unexpected error creating vehicleId{vehicleId}", ex, useridForLogging);
                     }
                 }
 
@@ -307,6 +307,9 @@ namespace UniANPR.Services.Race
 
                 #endregion
             }
+
+
+
 
         }
     }

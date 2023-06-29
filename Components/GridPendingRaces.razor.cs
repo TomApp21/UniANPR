@@ -24,8 +24,8 @@ namespace UniANPR.Components
 
         int subscriberId = 0;
 
-        private PopupCreateRace _thisCreateRacePopupRef { get; set; }
-        private PopupCreateTrack _thisCreateTrackPopupRef { get; set; }
+        private PopupEditRace _thisEditRacePopupRef { get; set; }
+
         TelerikNotification NotificationReference { get; set; }
 
         private List<Race_VM> _pendingRaceData { get; set; }
@@ -87,9 +87,9 @@ namespace UniANPR.Components
 
         #region Event Handlers
 
-        protected void EditPendingRace()
+        protected async Task EditPendingRace(int raceId)
         {
-            _thisCreateRacePopupRef.ShowCreateRaceForm();
+            _thisEditRacePopupRef.ShowEditRaceForm(_pendingRaceData.Where(x => x.RaceId == raceId).FirstOrDefault());
         }
 
         protected void DeletePendingRace()
@@ -100,58 +100,6 @@ namespace UniANPR.Components
         #endregion
 
         #region Event Callbacks
-
-        private void HandleRaceCreationConfirmed()
-        {
-            Race_VM raceToCreate = _thisCreateRacePopupRef.RaceData;
-            
-            bool blnSucess = _thisRaceService.ScheduleNewRace(raceToCreate);
-
-            if (blnSucess)
-            {
-                ShowNotification("Track created successfully.", true);
-                // Show Notification
-            }
-            else
-            {
-                 ShowNotification("Track creation failed.", false);
-            }
-        }
-
-        private void HandleRaceCreationCancelled()
-        { }
-
-        
-
-        private void HandleTrackCreationConfirmed()
-        {
-            string trackToCreate = _thisCreateTrackPopupRef.TrackData.TrackName;
-
-            if (_thisRaceService.CheckIfTrackNameExists(trackToCreate))
-            {
-                ShowNotification("Track Name already exists in system, please enter a different one.", false);
-            }
-            else
-            {
-                bool blnSucess = _thisRaceService.AddNewTrack(trackToCreate);
-
-                if (blnSucess)
-                {
-                    ShowNotification("Race creation failed.", false);
-                }
-            }
-        }
-
-        private void HandleTrackCreationCancelled()
-        { }
-
-        
-
-
-      
-
-            // service check if exists
-            // Add to DAL
 
         #endregion
 
@@ -165,11 +113,5 @@ namespace UniANPR.Components
                 CloseAfter = 3000
             });
         }
-
-
-
-
-
-
     }
 }

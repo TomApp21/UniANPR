@@ -17,7 +17,7 @@
 
                         @if(data.RegistrationClosed)
                         {
-                           <TelerikButton Class="threeSCTileHeaderButton" OnClick="@EditPendingRace" Icon="@FontIcon.Pencil"></TelerikButton> 
+                           <TelerikButton Class="threeSCTileHeaderButton" OnClick="() => EditPendingRace(data.RaceId)" Icon="@FontIcon.Pencil"></TelerikButton> 
                         }
                         <TelerikButton Class="threeSCTileHeaderButton" OnClick="DeletePendingRace" Icon="@FontIcon.X"></TelerikButton> 
                     
@@ -37,3 +37,5 @@
     </GridColumns>
 
 </TelerikGrid>
+
+<PopupEditRace @ref="_thisEditRacePopupRef" />

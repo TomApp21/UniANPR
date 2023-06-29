@@ -42,9 +42,11 @@ namespace UniANPR.Components
         #endregion
 
         #region Declarations
-
+        private int _subscriberId = 0;
         private List<Participant_VM> _raceParticipantData { get; set; }
-
+        private List<Participant_VM> _participantsAwaitingApproval { get; set; }
+        private List<Participant_VM> _registeredParticipants { get; set; }
+        private Race_VM _thisRaceDetails { get; set; }
         protected bool EditRacePopupVisible { get; set; }
         protected bool ConfirmBtnEnabled { get; set; }
         protected bool UserIdExists { get; set; }
@@ -57,6 +59,9 @@ namespace UniANPR.Components
         /// </summary>
         protected override void InitialiseComponentStaticData()
         {
+            _raceParticipantData = new List<Participant_VM>();
+            _participantsAwaitingApproval = new List<Participant_VM>();
+            _registeredParticipants = new List<Participant_VM>();
             //RaceData = new Race_VM();
 
         }
@@ -84,18 +89,24 @@ namespace UniANPR.Components
         /// <param name="newGeofence">Geofence model with WKB populated</param>
         /// <param name="existingGeofenceKeys">List of existing geofence keys used for validating newly entered user id</param>
         /// <returns></returns>
-        public async Task ShowCreateRaceForm()
+        public async Task ShowEditRaceForm(Race_VM thisRace)
         {
-            //ParticipantData = thisRaceService.
+                        EditRacePopupVisible = true;
 
-            thisThreeSCUserSessionReader.DisplayNameForUserId(CurrentUserId);
+            _thisRaceDetails = thisRace;
 
-            EditRacePopupVisible = true;
+            _participantsAwaitingApproval = _thisRaceDetails.RaceParticipants.Where(x => x.Approved == null).ToList();
+            _registeredParticipants = _thisRaceDetails.RaceParticipants.Where(x => x.Approved == true).ToList();
+
+            //thisThreeSCUserSessionReader.DisplayNameForUserId(CurrentUserId);
+
             ConfirmBtnEnabled = false;
 
         }
 
         #endregion
+
+
 
         #region Initialise Drop Down
 
@@ -104,20 +115,20 @@ namespace UniANPR.Components
         /// </summary>
         private void InitializeRaceTrackDdl()
         {
-            ValueTextModel trackDataEntry;
+            //ValueTextModel trackDataEntry;
 
-            TrackDdlData = new List<ValueTextModel>();
+            //TrackDdlData = new List<ValueTextModel>();
 
-            foreach(Track_SM thisTrack in thisRaceService.allTrackData)
-            {
-                trackDataEntry = new ValueTextModel()
-                {
-                    DdlValueField = thisTrack.TrackId,
-                    DdlTextField = thisTrack.TrackName
-                };
+            //foreach(Track_SM thisTrack in thisRaceService.allTrackData)
+            //{
+            //    trackDataEntry = new ValueTextModel()
+            //    {
+            //        DdlValueField = thisTrack.TrackId,
+            //        DdlTextField = thisTrack.TrackName
+            //    };
 
-                TrackDdlData.Add(trackDataEntry);
-            }
+            //    TrackDdlData.Add(trackDataEntry);
+            //}
         }
 
         #endregion
@@ -126,64 +137,37 @@ namespace UniANPR.Components
 
 
         
-        /// <summary>
-        /// Formats pop-up when user changes geofence type 
-        /// </summary>
-        protected async void SelectedTrackTypeChanged()
-        {
-            //if (CurrentGeofenceDetails.GeofenceType == GeofenceType.Invalid)
-            //{
-            //    ConfirmBtnEnabled = false;
-            //}
-            //else
-            //{
-            //    MinSpeedLimit = (CurrentGeofenceDetails.GeofenceType == GeofenceType.SpeedLimitZone) ? 1 : 0;
-            //    CurrentGeofenceDetails.SpeedLimit = (CurrentGeofenceDetails.GeofenceType == GeofenceType.SpeedLimitZone) ? 1 : 0;
-            //    ConfirmBtnEnabled = (CurrentGeofenceDetails.GeofenceType == GeofenceType.SpeedLimitZone || String.IsNullOrEmpty(CurrentGeofenceDetails.UserGeofenceId) || UserIdExists ) ? false : true;
-            //    StateHasChanged();
-            //}
-        }
-
-        /// <summary>
-        /// Enables/Disables confirm button depending on the input values in the popup
-        /// </summary>
-        private void SpotsChanged()
-        {
-            //ConfirmBtnEnabled = (CurrentGeofenceDetails.SpeedLimit > 0 && (!String.IsNullOrEmpty(CurrentGeofenceDetails.UserGeofenceId)) && !UserIdExists) ? true : false;
-        }
-
-        ///// <summary>
-        ///// Enables/Disables confirm button depending on the input values in the popup
-        ///// </summary>
-        private void LapsChanged()
-        {
-            //ConfirmBtnEnabled = (CurrentGeofenceDetails.SpeedLimit > 0 && (!String.IsNullOrEmpty(CurrentGeofenceDetails.UserGeofenceId)) && !UserIdExists) ? true : false;
-        }
-
-
-
-        /// <summary>
-        /// Cancel the selected geofence and invoke handler in main component
-        /// </summary>
-        protected async void CancelEditing()
-        {
-            OnRaceCreationCancelled?.Invoke();
-            CreateRacePopupVisible = false;
-            RaceData = new Race_VM();
-            StateHasChanged();
-        }
-
-
-        async void HandleValidSubmit()
-        {
-            OnRaceCreationConfirmed?.Invoke();
-            CreateRacePopupVisible = false;
-
-            StateHasChanged();
-        }
+    
 
 
 
         #endregion
+
+        #region Event Methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="participantId"></param>
+        private void ApproveParticipant(string participantId)
+        {
+
+
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="participantId"></param>
+        private void DenyParticipant(string participantId)
+        {
+
+
+
+        }
+
+        #endregion
+
     }
 }

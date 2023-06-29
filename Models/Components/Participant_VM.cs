@@ -8,17 +8,10 @@ namespace UniANPR.Models.Components
             public String ParticipantId { get; set; }
             public string ParticipantName 
             {
-                get
-                {
-                    CurrentUserId ;
-                }
-                set
-                {
-                    ;
-                }
+                get;set;
             }
             public int RaceId { get; set; }
-            public bool Approved { get; set; }
+            public bool? Approved { get; set; }
             public int ParticipantFinished { get; set; }
         }
     

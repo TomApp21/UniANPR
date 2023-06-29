@@ -1,10 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using UniANPR.Enum;
+using UniANPR.Models.Components;
 
 namespace DemoANPR.Models.Components
 {
     public class Race_VM
     {
+        //public Race_VM()
+        //{
+        //    RaceParticipants = new List<Participant_VM>();
+        //}
         public int RaceId { get; set; }
 
         [Display(Name = "Race Name:")]
@@ -28,9 +33,9 @@ namespace DemoANPR.Models.Components
         [Range(1, Int32.MaxValue, ErrorMessage = "The field {0} must be greater than {1}.")]
         public int RequiredLaps { get; set; }
     
+        public bool ParticipantsAwaiting { get; set; }
     
-    
-         public string RaceTrackName { get; set; }
+        public string RaceTrackName { get; set; }
         public int RegisteredParticipants { get; set; }
 
         public bool RegistrationClosed
@@ -44,6 +49,9 @@ namespace DemoANPR.Models.Components
                 ;
             }
         }
+
+
+        public List<Participant_VM> RaceParticipants { get; set; }
 
     }
 }

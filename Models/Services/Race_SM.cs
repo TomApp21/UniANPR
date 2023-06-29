@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using UniANPR.Enum;
+using UniANPR.Services.Race;
 
 namespace DemoANPR.Models.Services
 {
@@ -18,5 +19,9 @@ namespace DemoANPR.Models.Services
         public int RequiredLaps { get; set; }
 
         public int ActiveParticipants { get; set; }
+
+        public bool ParticipantsAwaiting { get; set; }
+
+        public List<Participant_SM> Participants { get; set; }
     }
 }

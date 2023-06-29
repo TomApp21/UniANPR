@@ -1,48 +1,51 @@
-﻿@using UniANPR.Models.Shared
+﻿@using Telerik.FontIcons
+@using UniANPR.Models.Components
+@using UniANPR.Models.Shared
 @inherits ThreeSComponentBase
 
 <TelerikWindow Modal="true" Size="WindowSize.Mediun" Height="auto" Width="auto" Visible="@EditRacePopupVisible" Resizable="false" Draggable="false">
     <WindowTitle>Edit Race</WindowTitle>
     <WindowActions>
-        <WindowAction Name="Close" OnClick="@CancelEditing"></WindowAction>
+        <WindowAction Name="Close"></WindowAction>
     </WindowActions>
     <WindowContent>
         <div style="padding: 20px;">
 
-            <TelerikGrid Data=@_raceParticipantData
+            <TelerikGrid Data=@_participantsAwaitingApproval
              Height="100%"
              Class="activeRaceGrid">
                 <RowTemplate Context="data">
                   
                     <td>@data.ParticipantName</td>
-                    <td>@data.RaceTrackName</td>
-                    <td>@data.RegisteredParticipants/@data.Spots</td>
-
-                    <td>
-
-                        @if(data.RegistrationClosed)
-                        {
-                           <TelerikButton Class="threeSCTileHeaderButton" OnClick="@EditPendingRace" Icon="@FontIcon.Pencil"></TelerikButton> 
-                        }
-                        <TelerikButton Class="threeSCTileHeaderButton" OnClick="DeletePendingRace" Icon="@FontIcon.X"></TelerikButton> 
-                    
-                    </td>
+                    <TelerikButton Class="threeSCTileHeaderButton" OnClick="() => DenyParticipant(data.ParticipantId)" Icon="@FontIcon.X"></TelerikButton> 
+                    <TelerikButton Class="threeSCTileHeaderButton" OnClick="() => ApproveParticipant(data.ParticipantId)" Icon="@FontIcon.Check"></TelerikButton> 
                 </RowTemplate>
                 <GridColumns>
 
-                    <GridColumn Field=@nameof(Participant_VM.RaceName)
-                                Title="Race Name" Width="55px" />
-                    <GridColumn Field=@nameof(Race_VM.RaceTrackName)
-                                Title="Track" Width="120px" />
-                    <GridColumn Field=@nameof(Race_VM.RegisteredParticipants)
-                                Title="Participants" Width="80px" />
+                    <GridColumn Field=@nameof(Participant_VM.ParticipantName)
+                                Title="Name" Width="55px" />
                     <GridColumn Field="Actions"
-                                Title="Actions" Width="80px" />
+                                Title="Process" Width="80px" />
 
                 </GridColumns>
-
             </TelerikGrid>
 
+            <TelerikGrid Data=@_registeredParticipants
+             Height="100%"
+             Class="activeRaceGrid">
+                <RowTemplate Context="data">
+                    <td>@data.ParticipantName</td>
+@*                    <TelerikButton Class="threeSCTileHeaderButton" OnClick="() => DenyParticipant(data.ParticipantId)" Icon="@FontIcon.X"></TelerikButton> 
+*@                </RowTemplate>
+                <GridColumns>
+
+                    <GridColumn Field=@nameof(Participant_VM.ParticipantName)
+                                Title="Name" Width="55px" />
+  @*                  <GridColumn Field="Actions"
+                                Title="Process" Width="80px" />*@
+
+                </GridColumns>
+            </TelerikGrid>
         </div>
 
     </WindowContent>

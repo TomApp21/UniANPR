@@ -4,7 +4,7 @@
     {
         private class Race_DM
         {
-            public int RaceId { get; set; }
+            public int Id { get; set; }
             public int RaceTrackId { get; set; }
             public int SpotLimit { get; set; }
             public DateTime StartTime { get; set; }

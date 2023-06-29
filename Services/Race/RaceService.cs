@@ -16,6 +16,7 @@ namespace UniANPR.Services.Race
 
         #region Delegate Definitions
 
+        public delegate void RaceParticipantDataChangedDelegate(Dictionary<int, List<Participant_SM>> allRaceParticipantData);
         /// <summary>
         /// Delegate defining the callback to the client when the distribution of vehicles across the various Task Statuses has changed
         /// </summary>
@@ -29,6 +30,7 @@ namespace UniANPR.Services.Race
 
         #region Delegate & Subscriber Private Declarations
 
+        private Dictionary<int, RaceParticipantDataChangedDelegate> _allRaceParticipantDataChangedDelegates;
         private Dictionary<int, TrackDataChangeDelegate> _allTrackDataChangedDelegates; 
         private Dictionary<int, PendingRaceDataChangeDelegate> _allPendingRaceDataChangedDelegates; 
 
@@ -40,6 +42,7 @@ namespace UniANPR.Services.Race
         public List<Race_SM> allRaceData { get; set; }
         public List<Race_SM> allPendingRaceData { get; set; }
 
+        public Dictionary<int, List<Participant_SM>> allRacesParticipantsData { get; set;}
 
         private RaceService_DAL _thisRaceService_DAL;
 
@@ -66,6 +69,7 @@ namespace UniANPR.Services.Race
 
             _thisRaceService_DAL = new RaceService_DAL(_thisThreeSCApplicationLogger, thisConfig.DatabaseConnectionString);
 
+            _allRaceParticipantDataChangedDelegates = new Dictionary<int, RaceParticipantDataChangedDelegate>();
             _allPendingRaceDataChangedDelegates = new Dictionary<int, PendingRaceDataChangeDelegate>();
             _allTrackDataChangedDelegates = new Dictionary<int, TrackDataChangeDelegate>();
         }
@@ -122,12 +126,29 @@ namespace UniANPR.Services.Race
         /// </summary>
         private void InitialiseRaceData()
         {
+            Dictionary<int, List<Participant_SM>> allRacesParticipants = new Dictionary<int, List<Participant_SM>>();
+
             List<Race_DM> raceData = _thisRaceService_DAL.GetAllRaces();
+
+            foreach (int raceId in raceData.Select(x => x.Id).ToList())
+            {
+                List<Participant_DM> thisRaceParticipants = _thisRaceService_DAL.GetParticipantsForRace(raceId);
+                
+                List<Participant_SM> thisRaceParticipants_SM = (from rp in thisRaceParticipants
+                                     select new Participant_SM()
+                                     {
+                                         ParticipantId = rp.ParticipantId,
+                                         ParticipantName = rp.ParticipantName,
+                                         RaceId = raceId
+                                     }).ToList();
+
+                allRacesParticipants.Add(raceId, thisRaceParticipants_SM);
+            }
 
             allRaceData = (from rd in raceData
                                  select new Race_SM()
                                  {
-                                     RaceId = rd.RaceId,
+                                     RaceId = rd.Id,
                                      RaceTrackId = rd.RaceTrackId,
                                      RequiredLaps = rd.RequiredLaps,
                                      Spots = rd.SpotLimit,
@@ -135,9 +156,8 @@ namespace UniANPR.Services.Race
                                      EndTime = rd.EndTime,
                                      RaceName = rd.RaceName,
                                      RaceStatus = (RaceStatus)rd.RaceStatusEnumValue,
+                                     Participants = allRacesParticipants[rd.Id]
                                  }).ToList();
-        
-            // populate active participants
         }
 
 
@@ -147,6 +167,58 @@ namespace UniANPR.Services.Race
         #region Private initialise geofence and segment published data
 
         #endregion
+
+        #region All Race Participants Data Subscribe, call delegates and unsubscribe methods
+
+        /// <summary>
+        /// Register a delegate to receive all changes to the list of vehicle ids
+        /// </summary>
+        /// <param name="newAllVehicleIdsChangedHandler">Delegate that will get called on Add and on all changes until unsubscribed</param>
+        /// <returns>The subscriber id associated with this registration</returns>
+        public int AddSubscriber_RaceParticipantDataChanged(RaceParticipantDataChangedDelegate newHandler)
+        {
+            int subscriberId = ThreadSafeAddToSubscriberDictionary<RaceParticipantDataChangedDelegate>(_allRaceParticipantDataChangedDelegates, newHandler);
+
+            Task.Run(() => { newHandler.Invoke(allRacesParticipantsData); });
+
+            return subscriberId;
+        }
+
+        /// <summary>
+        /// Remove specified subscriber to AllVehicleIdsChanged
+        /// </summary>
+        /// <param name="subscriberId">The subscriber id associated with this registration</param>
+        public void RemoveSubscriber_RaceParticipantChanged(int subscriberId)
+        {
+            ThreadSafeRemoveFromSubscriberDictionary<RaceParticipantDataChangedDelegate>(_allRaceParticipantDataChangedDelegates, subscriberId);
+        }
+
+
+        /// <summary>
+        /// Inform all subscribers of a change
+        /// </summary>
+        private void SendToAllRaceParticipantDataChangedDelegates()
+        {
+            lock (_allRaceParticipantDataChangedDelegates)
+            {
+                foreach (int subscriberId in _allRaceParticipantDataChangedDelegates.Keys)
+                {
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            _allRaceParticipantDataChangedDelegates[subscriberId].Invoke(allRacesParticipantsData);
+                        }
+                        catch (Exception ex)
+                        {
+                            //_thisThreeSCApplicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, "subscriberId[" + subscriberId.ToString() + "]", ex, null);
+                        }
+                    });
+                }
+            }
+        }
+        #endregion
+
 
         #region AllVehicleIds Subscribe, call delegates and unsubscribe methods
 
