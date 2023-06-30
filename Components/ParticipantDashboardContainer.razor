@@ -1,0 +1,41 @@
+﻿@using Telerik.FontIcons
+@using UniANPR.Models.Shared
+@inherits ThreeSComponentBase
+
+<TelerikNotification @ref="NotificationReference"
+                         HorizontalPosition="@NotificationHorizontalPosition.Center"
+                         VerticalPosition="@NotificationVerticalPosition.Top"></TelerikNotification>
+
+
+<div style="width: auto">
+    <div class="dashboardBtn">
+        <TelerikButton Class="threeSCTileHeaderButton" OnClick="@AddNewTrack" Icon="@FontIcon.Plus">Register For A Race</TelerikButton>
+    </div>
+    <div class="dashboardBtn">
+        <TelerikButton Class="threeSCTileHeaderButton" OnClick="@AddNewTrack" Icon="@FontIcon.Plus">View Active Race</TelerikButton>
+    </div>
+    <div class="dashboardBtn">
+        <TelerikButton Class="threeSCTileHeaderButton" OnClick="@AddNewTrack" Icon="@FontIcon.Plus">Previous Races</TelerikButton>
+    </div>
+    <div class="dashboardBtn">
+        <TelerikButton Class="threeSCTileHeaderButton" OnClick="@AddNewTrack" Icon="@FontIcon.Plus">League Table</TelerikButton>
+    </div>
+</div>
+
+
+
+
+
+
+<UniANPR.Components.PopupCreateRace @ref="_thisCreateRacePopupRef" OnRaceCreationConfirmed="@HandleRaceCreationConfirmed" OnRaceCreationCancelled="@HandleRaceCreationCancelled" />
+<UniANPR.Components.PopupCreateTrack @ref="_thisCreateTrackPopupRef" OnTrackCreationConfirmed="@HandleTrackCreationConfirmed" OnTrackCreationCancelled="@HandleTrackCreationCancelled" />
+
+<style>
+
+    .dashboardBtn {
+        text-align: center;
+        padding-bottom: 20px;
+        margin: auto;
+    }
+
+</style>

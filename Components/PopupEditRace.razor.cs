@@ -63,7 +63,6 @@ namespace UniANPR.Components
             _participantsAwaitingApproval = new List<Participant_VM>();
             _registeredParticipants = new List<Participant_VM>();
             //RaceData = new Race_VM();
-
         }
 
         /// <summary>
@@ -91,7 +90,7 @@ namespace UniANPR.Components
         /// <returns></returns>
         public async Task ShowEditRaceForm(Race_VM thisRace)
         {
-                        EditRacePopupVisible = true;
+            EditRacePopupVisible = true;
 
             _thisRaceDetails = thisRace;
 
@@ -101,7 +100,6 @@ namespace UniANPR.Components
             //thisThreeSCUserSessionReader.DisplayNameForUserId(CurrentUserId);
 
             ConfirmBtnEnabled = false;
-
         }
 
         #endregion

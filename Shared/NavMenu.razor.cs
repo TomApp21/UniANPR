@@ -116,6 +116,21 @@ namespace UniANPR.Shared
                 MenuItems.Add(dashboardMenu);
             }
 
+            if (IsInRole(ThreeSCRole.User))
+            {
+                MenuItem dashboardMenu = new MenuItem()
+                {
+                    Id = "userDashboard",
+                    Url = "/Dashboard",
+                    Text = "Dashboard",
+                    Icon = "icn_MenuContainer icn_SiteOverview",
+                };
+
+                MenuItems.Add(dashboardMenu);
+            }
+
+
+
             // Add Site overview menus that user is authorised for 
             // ---------------------------------------------------
             if (IsInRole("Operator"))

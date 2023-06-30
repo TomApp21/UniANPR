@@ -7,8 +7,15 @@
 
 <h3>Dashboard</h3>
 
+@if (IsInRole(ThreeSC.Net6Lib.BlazorTools.Authorization.ThreeSCRole.UserAdmin))
+{
+    <UniANPR.Components.DashboardContainer/>
 
-<UniANPR.Components.DashboardContainer/>
+}
+else 
+{
+    <UniANPR.Components.ParticipantDashboardContainer />
+}
 
 
 

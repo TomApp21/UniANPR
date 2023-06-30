@@ -323,6 +323,36 @@ namespace UniANPR.Services.Race
         }
         #endregion
 
+        #region
+
+        public List<Race_SM> GetEligibleRaces(string participantId)
+        {
+            List<Race_SM> eligibleRaces = allRaceData.Where(x => x.StartTime > DateTime.Now.AddHours(1)).ToList();
+
+            foreach (List<Participant_SM> raceParticipants in allRaceData.Where(x => x.StartTime > DateTime.Now.AddHours(1)).Select(x => x.Participants).ToList())
+            {
+                if (raceParticipants.Select(x => x.ParticipantId).ToList().Contains(participantId))
+                {
+                    // If user has not been denied --> user is eligible to register.
+                    bool isEligible = (!raceParticipants.Where(x => x.ParticipantId == participantId).FirstOrDefault().Approved) ? false : true;
+                }
+                else
+                {
+                    // eligible
+                }
+            }
+
+
+
+
+            return eligibleRaces;
+
+        }
+
+
+        #endregion
+
+
 
         #region Validation Checks
 
