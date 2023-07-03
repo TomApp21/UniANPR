@@ -6,7 +6,9 @@ using Telerik.Blazor.Components;
 using UniANPR.Enum;
 using UniANPR.Interfaces;
 using UniANPR.Models;
+using UniANPR.Models.Components;
 using UniANPR.Models.Services;
+using UniANPR.Services.Race;
 using UniANPR.Utility;
 
 namespace UniANPR.Components
@@ -48,6 +50,10 @@ namespace UniANPR.Components
 
         protected override void OnDispose()
         {
+            if (subscriberId != 0 )
+            {
+                _thisRaceService.RemoveSubscriber_PendingRaceDataChanged(subscriberId);
+            }
         }
 
         #endregion
@@ -63,21 +69,22 @@ namespace UniANPR.Components
         {
             InvokeAsync(() =>
             {
-                
+
                 _pendingRaceData = (from rd in pendingRaceData
-                                     select new Race_VM()
-                                     {
-                                         RaceId = rd.RaceId,
-                                         RaceTrackId = rd.RaceTrackId,
-                                         RaceTrackName = _thisRaceService.allTrackData.Where(x => x.TrackId == rd.RaceTrackId).FirstOrDefault().TrackName,
-                                         RequiredLaps = rd.RequiredLaps,
-                                         Spots = rd.Spots,
-                                         StartTime = rd.StartTime,
-                                         EndTime = rd.EndTime,
-                                         RaceName = rd.RaceName,
-                                         RaceStatus = (RaceStatus)rd.RaceStatus,
-                                         RegisteredParticipants = rd.ActiveParticipants,
-                                     }).ToList();
+                                    select new Race_VM()
+                                    {
+                                        RaceId = rd.RaceId,
+                                        RaceTrackId = rd.RaceTrackId,
+                                        RaceTrackName = _thisRaceService.allTrackData.Where(x => x.TrackId == rd.RaceTrackId).FirstOrDefault().TrackName,
+                                        RequiredLaps = rd.RequiredLaps,
+                                        Spots = rd.Spots,
+                                        StartTime = rd.StartTime,
+                                        EndTime = rd.EndTime,
+                                        RaceName = rd.RaceName,
+                                        RaceStatus = (RaceStatus)rd.RaceStatus,
+                                        RegisteredParticipants = rd.ActiveParticipants,
+                                        RaceParticipants = ConvertParticipantServiceToView(rd.Participants)
+                                    }).ToList();
 
                 StateHasChanged();
             });
@@ -89,7 +96,9 @@ namespace UniANPR.Components
 
         protected async Task EditPendingRace(int raceId)
         {
-            _thisEditRacePopupRef.ShowEditRaceForm(_pendingRaceData.Where(x => x.RaceId == raceId).FirstOrDefault());
+            Race_VM raceToEdit = _pendingRaceData.Where(x => x.RaceId == raceId).FirstOrDefault();
+            
+            await _thisEditRacePopupRef.ShowEditRaceForm(raceToEdit);
         }
 
         protected void DeletePendingRace()
@@ -113,5 +122,26 @@ namespace UniANPR.Components
                 CloseAfter = 3000
             });
         }
+
+
+        private List<Participant_VM> ConvertParticipantServiceToView(List<Participant_SM> participants)
+        {
+            List<Participant_VM> raceParticipants = new List<Participant_VM>();
+            
+            raceParticipants = (from p in participants
+                        select new Participant_VM()
+                        {
+                            ParticipantId = p.ParticipantId,
+                            RaceId = p.RaceId,
+                            Approved = p.Approved,
+                            Numberplate = p.Numberplate,
+                            ParticipantName = thisThreeSCUserSessionReader.DisplayNameForUserId(p.ParticipantId),
+                            ParticipantFinished = p.ParticipantFinished
+                        }).ToList();
+
+            return raceParticipants;
+        }
+
+        
     }
 }

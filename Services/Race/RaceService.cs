@@ -139,6 +139,9 @@ namespace UniANPR.Services.Race
                                      {
                                          ParticipantId = rp.ParticipantId,
                                          ParticipantName = rp.ParticipantName,
+                                         Numberplate = rp.Numberplate,
+                                         Approved = rp.Approved,
+                                         ParticipantFinished = rp.ParticipantFinished,
                                          RaceId = raceId
                                      }).ToList();
 
@@ -220,7 +223,7 @@ namespace UniANPR.Services.Race
         #endregion
 
 
-        #region AllVehicleIds Subscribe, call delegates and unsubscribe methods
+        #region Track data Subscribe, call delegates and unsubscribe methods
 
         /// <summary>
         /// Register a delegate to receive all changes to the list of vehicle ids
@@ -325,28 +328,16 @@ namespace UniANPR.Services.Race
 
         #region
 
+        /// <summary>
+        /// Gets list of races that user could register for.
+        /// </summary>
+        /// <param name="participantId"></param>
+        /// <returns></returns>
         public List<Race_SM> GetEligibleRaces(string participantId)
         {
-            List<Race_SM> eligibleRaces = allRaceData.Where(x => x.StartTime > DateTime.Now.AddHours(1)).ToList();
-
-            foreach (List<Participant_SM> raceParticipants in allRaceData.Where(x => x.StartTime > DateTime.Now.AddHours(1)).Select(x => x.Participants).ToList())
-            {
-                if (raceParticipants.Select(x => x.ParticipantId).ToList().Contains(participantId))
-                {
-                    // If user has not been denied --> user is eligible to register.
-                    bool isEligible = (!raceParticipants.Where(x => x.ParticipantId == participantId).FirstOrDefault().Approved) ? false : true;
-                }
-                else
-                {
-                    // eligible
-                }
-            }
-
-
-
+            List<Race_SM> eligibleRaces = allRaceData.Where(x => x.StartTime > DateTime.Now.AddHours(1) && !x.Participants.Select(p => p.ParticipantId).ToList().Contains(participantId)).ToList();
 
             return eligibleRaces;
-
         }
 
 
@@ -381,8 +372,11 @@ namespace UniANPR.Services.Race
 
             if (blnSuccess)
             {
+                InitialiseTrackData();
+
                 SendToAllTrackDataChangedDelegates();
             }
+
 
             return blnSuccess;
         }
@@ -413,7 +407,7 @@ namespace UniANPR.Services.Race
             return blnSuccess;
         }
 
-        public bool ProcessParticipantAwaitingRegistration(int participantId, int raceId, bool approveRacer)
+        public bool ProcessParticipantAwaitingRegistration(string participantId, int raceId, bool approveRacer)
         {
             bool blnSuccess = false;
 
@@ -421,11 +415,34 @@ namespace UniANPR.Services.Race
 
             if (blnSuccess)
             {
-
+                InitialiseRaceData();
+                SendToAllPendingRaceDataChangedDelegates();
             }
+
 
             return blnSuccess;
         }
+        
+        public bool RegisterParticipantForRace(string numberPlate, string participantId, int raceId)
+        {
+            // check if numberplate alr\already exists for that race
+
+            bool blnSuccess = false;
+
+            blnSuccess = _thisRaceService_DAL.RegisterParticipantForRace(participantId, raceId, numberPlate);
+
+
+            if (blnSuccess)
+            {
+                InitialiseRaceData();
+                SendToAllPendingRaceDataChangedDelegates();
+            }
+
+            return blnSuccess;
+
+        }
+
+
 
         #endregion
 

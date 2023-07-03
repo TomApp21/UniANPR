@@ -22,6 +22,7 @@ namespace UniANPR.Components
 
         private PopupCreateRace _thisCreateRacePopupRef { get; set; }
         private PopupCreateTrack _thisCreateTrackPopupRef { get; set; }
+        private PopupEditRace _thisEditRacePopupRef { get; set; }
         TelerikNotification NotificationReference { get; set; }
 
 
@@ -81,12 +82,12 @@ namespace UniANPR.Components
 
             if (blnSucess)
             {
-                ShowNotification("Track created successfully.", true);
+                ShowNotification("Race created successfully.", true);
                 // Show Notification
             }
             else
             {
-                 ShowNotification("Track creation failed.", false);
+                 ShowNotification("Race creation failed.", false);
             }
         }
 
@@ -107,10 +108,16 @@ namespace UniANPR.Components
             {
                 bool blnSucess = _thisRaceService.AddNewTrack(trackToCreate);
 
-                if (blnSucess)
-                {
-                    ShowNotification("Race creation failed.", false);
-                }
+           
+            if (blnSucess)
+            {
+                ShowNotification("Track created successfully.", true);
+                // Show Notification
+            }
+            else
+            {
+                 ShowNotification("Track creation failed.", false);
+            }
             }
         }
 

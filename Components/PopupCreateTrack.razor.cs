@@ -85,7 +85,6 @@ namespace UniANPR.Components
 
         #endregion
 
-
         #region Popup Actions Handler
         
         /// <summary>

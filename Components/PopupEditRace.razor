@@ -3,44 +3,60 @@
 @using UniANPR.Models.Shared
 @inherits ThreeSComponentBase
 
+
+
 <TelerikWindow Modal="true" Size="WindowSize.Mediun" Height="auto" Width="auto" Visible="@EditRacePopupVisible" Resizable="false" Draggable="false">
     <WindowTitle>Edit Race</WindowTitle>
     <WindowActions>
         <WindowAction Name="Close"></WindowAction>
     </WindowActions>
     <WindowContent>
-        <div style="padding: 20px;">
 
+        <TelerikNotification @ref="NotificationReference"
+                         HorizontalPosition="@NotificationHorizontalPosition.Center"
+                         VerticalPosition="@NotificationVerticalPosition.Top"></TelerikNotification>
+
+        <div style="padding: 20px;">
+            Participants Awaiting Approval
             <TelerikGrid Data=@_participantsAwaitingApproval
              Height="100%"
              Class="activeRaceGrid">
                 <RowTemplate Context="data">
                   
                     <td>@data.ParticipantName</td>
-                    <TelerikButton Class="threeSCTileHeaderButton" OnClick="() => DenyParticipant(data.ParticipantId)" Icon="@FontIcon.X"></TelerikButton> 
-                    <TelerikButton Class="threeSCTileHeaderButton" OnClick="() => ApproveParticipant(data.ParticipantId)" Icon="@FontIcon.Check"></TelerikButton> 
+                    <td>
+                        <TelerikButton Class="threeSCTileHeaderButton" OnClick="() => DenyParticipant(data.ParticipantId)" Icon="@FontIcon.X"></TelerikButton> 
+                        <TelerikButton Class="threeSCTileHeaderButton" OnClick="() => ApproveParticipant(data.ParticipantId)" Icon="@FontIcon.Check"></TelerikButton> 
+                    </td>
+
                 </RowTemplate>
                 <GridColumns>
 
                     <GridColumn Field=@nameof(Participant_VM.ParticipantName)
-                                Title="Name" Width="55px" />
+                                Title="Name" Width="155px" />
                     <GridColumn Field="Actions"
-                                Title="Process" Width="80px" />
+                                Title="Process" Width="60px" />
 
                 </GridColumns>
             </TelerikGrid>
-
+            <br />
+            Registered Participants
             <TelerikGrid Data=@_registeredParticipants
              Height="100%"
              Class="activeRaceGrid">
                 <RowTemplate Context="data">
                     <td>@data.ParticipantName</td>
+                    <td>@data.Numberplate</td>
+
 @*                    <TelerikButton Class="threeSCTileHeaderButton" OnClick="() => DenyParticipant(data.ParticipantId)" Icon="@FontIcon.X"></TelerikButton> 
 *@                </RowTemplate>
                 <GridColumns>
 
                     <GridColumn Field=@nameof(Participant_VM.ParticipantName)
                                 Title="Name" Width="55px" />
+                                
+                    <GridColumn Field=@nameof(Participant_VM.Numberplate)
+                                Title="Numberplate" Width="55px" />
   @*                  <GridColumn Field="Actions"
                                 Title="Process" Width="80px" />*@
 

@@ -36,7 +36,18 @@ namespace DemoANPR.Models.Components
         public bool ParticipantsAwaiting { get; set; }
     
         public string RaceTrackName { get; set; }
-        public int RegisteredParticipants { get; set; }
+        public int RegisteredParticipants 
+        {
+            get
+            {
+                return RaceParticipants.Where(x => x.Approved == true).ToList().Count();
+            }
+
+            set
+            {
+                ;
+            }
+        }
 
         public bool RegistrationClosed
         {
@@ -52,6 +63,13 @@ namespace DemoANPR.Models.Components
 
 
         public List<Participant_VM> RaceParticipants { get; set; }
+
+
+        public int GetActiveParticipants()
+        {
+            return RaceParticipants.Where(x => x.Approved == true).ToList().Count();
+
+        }
 
     }
 }

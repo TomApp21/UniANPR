@@ -13,6 +13,7 @@ namespace UniANPR.Models.Components
             public int RaceId { get; set; }
             public bool? Approved { get; set; }
             public int ParticipantFinished { get; set; }
-        }
+            public string Numberplate { get; set; }
+    }
     
 }

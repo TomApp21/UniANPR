@@ -6,6 +6,10 @@ using UniANPR.Models.Services;
 using UniANPR.Models.Shared;
 
 using ThreeSC.NetStandardLib.StandardTools.Interfaces;
+using Telerik.Blazor.Components;
+using Telerik.Blazor;
+using DemoANPR.Models.Services;
+using UniANPR.Services.Race;
 
 namespace UniANPR.Components
 {
@@ -42,6 +46,11 @@ namespace UniANPR.Components
         #endregion
 
         #region Declarations
+        TelerikNotification NotificationReference { get; set; }
+
+
+
+
         private int _subscriberId = 0;
         private List<Participant_VM> _raceParticipantData { get; set; }
         private List<Participant_VM> _participantsAwaitingApproval { get; set; }
@@ -62,6 +71,8 @@ namespace UniANPR.Components
             _raceParticipantData = new List<Participant_VM>();
             _participantsAwaitingApproval = new List<Participant_VM>();
             _registeredParticipants = new List<Participant_VM>();
+
+            _subscriberId = thisRaceService.AddSubscriber_PendingRaceDataChanged(HandleNewPendingRaceDataReceived);
             //RaceData = new Race_VM();
         }
 
@@ -76,9 +87,50 @@ namespace UniANPR.Components
         /// On component being closed, unsubscribe from the service's change event
         /// </summary>
         protected override void OnDispose()
-        { }
+        { 
+            if (_subscriberId != 0 )
+            {
+                thisRaceService.RemoveSubscriber_PendingRaceDataChanged(_subscriberId);
+            }
+        }
 
         #endregion
+        
+
+
+        #region Handle Pending Race Data Changed
+
+        /// <summary>
+        /// Published site data has changed (or set on first subscription)
+        /// Create the map and layer data from teh published site details
+        /// </summary>
+        /// <param name="siteConfigurationData"></param>
+        private void HandleNewPendingRaceDataReceived(List<Race_SM> pendingRaceData)
+        {
+            InvokeAsync(() =>
+            {
+                if (pendingRaceData != null)
+                {
+                    if (_thisRaceDetails != null)
+                    {
+                        List<Participant_SM> raceParticipants = pendingRaceData.Where(x => x.RaceId == _thisRaceDetails.RaceId).Select(x => x.Participants).FirstOrDefault();
+
+                        _raceParticipantData = ConvertParticipantServiceToView(raceParticipants);
+
+                        _participantsAwaitingApproval = _raceParticipantData.Where(x => x.Approved == null).ToList();
+                        _registeredParticipants = _raceParticipantData.Where(x => x.Approved == true).ToList();
+
+                    }
+                }
+
+                StateHasChanged();
+            });
+        }
+
+        #endregion
+
+
+
 
         #region Show Popup Handler
 
@@ -90,9 +142,13 @@ namespace UniANPR.Components
         /// <returns></returns>
         public async Task ShowEditRaceForm(Race_VM thisRace)
         {
-            EditRacePopupVisible = true;
 
             _thisRaceDetails = thisRace;
+
+            if (_thisRaceDetails.RaceParticipants == null)
+            {
+                _thisRaceDetails.RaceParticipants = new List<Participant_VM>();
+            }
 
             _participantsAwaitingApproval = _thisRaceDetails.RaceParticipants.Where(x => x.Approved == null).ToList();
             _registeredParticipants = _thisRaceDetails.RaceParticipants.Where(x => x.Approved == true).ToList();
@@ -100,6 +156,10 @@ namespace UniANPR.Components
             //thisThreeSCUserSessionReader.DisplayNameForUserId(CurrentUserId);
 
             ConfirmBtnEnabled = false;
+
+            EditRacePopupVisible = true;
+
+            StateHasChanged();
         }
 
         #endregion
@@ -149,7 +209,19 @@ namespace UniANPR.Components
         /// <param name="participantId"></param>
         private void ApproveParticipant(string participantId)
         {
+            bool blnSuccess = false;
 
+            blnSuccess = thisRaceService.ProcessParticipantAwaitingRegistration(participantId, _thisRaceDetails.RaceId, true);
+
+            if (blnSuccess)
+            {
+                ShowNotification("Participant registered successfully.", true);
+                // Show Notification
+            }
+            else
+            {
+                 ShowNotification("Participant registration failed.", false);
+            }
 
 
         }
@@ -160,12 +232,51 @@ namespace UniANPR.Components
         /// <param name="participantId"></param>
         private void DenyParticipant(string participantId)
         {
+            bool blnSuccess = false;
 
+            blnSuccess = thisRaceService.ProcessParticipantAwaitingRegistration(participantId, _thisRaceDetails.RaceId, false);
 
+            if (blnSuccess)
+            {
+                ShowNotification("Participant denied successfully.", true);
+                // Show Notification
+            }
+            else
+            {
+                 ShowNotification("Participant deny failed.", false);
+            }
 
         }
 
         #endregion
 
+        private void ShowNotification(string notificationText, bool successTheme)
+        {
+            NotificationReference.Show(new NotificationModel()
+            {
+                Text = GetLocalisedString(notificationText),
+                ThemeColor = successTheme ? Telerik.Blazor.ThemeConstants.Notification.ThemeColor.Success : ThemeConstants.Notification.ThemeColor.Error,
+                ShowIcon = true,
+                CloseAfter = 3000
+            });
+        }
+
+        private List<Participant_VM> ConvertParticipantServiceToView(List<Participant_SM> participants)
+        {
+            List<Participant_VM> raceParticipants = new List<Participant_VM>();
+            
+            raceParticipants = (from p in participants
+                        select new Participant_VM()
+                        {
+                            ParticipantId = p.ParticipantId,
+                            RaceId = p.RaceId,
+                            Approved = p.Approved,
+                            Numberplate = p.Numberplate,
+                            ParticipantName = thisThreeSCUserSessionReader.DisplayNameForUserId(p.ParticipantId),
+                            ParticipantFinished = p.ParticipantFinished
+                        }).ToList();
+
+            return raceParticipants;
+        }
     }
 }

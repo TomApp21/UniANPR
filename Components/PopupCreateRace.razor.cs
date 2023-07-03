@@ -48,7 +48,7 @@ namespace UniANPR.Components
 
         protected List<ValueTextModel> TrackDdlData { get; set; }
 
-
+        private int _subscriberId = 0;
 
         /// <summary>
         /// Sets minimum speed limit depending on the geofence type selected 
@@ -67,6 +67,8 @@ namespace UniANPR.Components
         {
             RaceData = new Race_VM();
 
+            _subscriberId = thisRaceService.AddSubscriber_TrackDataChanged(HandleNewTrackDataReceived);
+
         }
 
         /// <summary>
@@ -80,7 +82,42 @@ namespace UniANPR.Components
         /// On component being closed, unsubscribe from the service's change event
         /// </summary>
         protected override void OnDispose()
-        { }
+        {
+            if (_subscriberId != 0)
+            {
+                thisRaceService.RemoveSubscriber_TrackDataChanged(_subscriberId);
+            }
+            
+        }
+
+        #endregion
+
+        #region Track Data Changed Handler 
+
+        private void HandleNewTrackDataReceived(List<Track_SM> newTrackData)
+        {
+            InvokeAsync(() =>
+            {
+                ValueTextModel trackDataEntry;
+
+                TrackDdlData = new List<ValueTextModel>();
+
+                foreach(Track_SM thisTrack in newTrackData)
+                {
+                    trackDataEntry = new ValueTextModel()
+                    {
+                        DdlValueField = thisTrack.TrackId,
+                        DdlTextField = thisTrack.TrackName
+                    };
+
+                    TrackDdlData.Add(trackDataEntry);
+                }
+                StateHasChanged();
+
+            });
+
+        }
+
 
         #endregion
 
@@ -94,7 +131,7 @@ namespace UniANPR.Components
         /// <returns></returns>
         public async Task ShowCreateRaceForm()
         {
-            InitializeRaceTrackDdl();
+            //InitializeRaceTrackDdl();
             RaceData = new Race_VM();
 
 

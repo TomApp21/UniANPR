@@ -9,7 +9,7 @@
 
 <div style="width: auto">
     <div class="dashboardBtn">
-        <TelerikButton Class="threeSCTileHeaderButton" OnClick="@AddNewTrack" Icon="@FontIcon.Plus">Register For A Race</TelerikButton>
+        <TelerikButton Class="threeSCTileHeaderButton" OnClick="@RegisterForARace" Icon="@FontIcon.Plus">Register For A Race</TelerikButton>
     </div>
     <div class="dashboardBtn">
         <TelerikButton Class="threeSCTileHeaderButton" OnClick="@AddNewTrack" Icon="@FontIcon.Plus">View Active Race</TelerikButton>
@@ -29,7 +29,7 @@
 
 <UniANPR.Components.PopupCreateRace @ref="_thisCreateRacePopupRef" OnRaceCreationConfirmed="@HandleRaceCreationConfirmed" OnRaceCreationCancelled="@HandleRaceCreationCancelled" />
 <UniANPR.Components.PopupCreateTrack @ref="_thisCreateTrackPopupRef" OnTrackCreationConfirmed="@HandleTrackCreationConfirmed" OnTrackCreationCancelled="@HandleTrackCreationCancelled" />
-
+<PopupRegisterForRace @ref="_thisRegisterRacePopupRef" OnRaceRegistrationConfirmed="@HandleParticipantRaceRegistration" OnRaceRegistrationCancelled="@HandleParticipantRaceRegistrationCancelled" />
 <style>
 
     .dashboardBtn {

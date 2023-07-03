@@ -15,8 +15,11 @@ namespace UniANPR.Interfaces
 
         bool ScheduleNewRace(Race_VM raceToCreate);
 
-        bool ProcessParticipantAwaitingRegistration(int participantId, int raceId, bool approveRacer);
+        bool ProcessParticipantAwaitingRegistration(string participantId, int raceId, bool approveRacer);
+        bool RegisterParticipantForRace(string numberPlate, string participantId, int raceId);
 
+
+        List<Race_SM> GetEligibleRaces(string participantId);
 
          /// <summary>
         /// Register a delegate to receive all changes to VehicleIdsInTaskAllocationStateData

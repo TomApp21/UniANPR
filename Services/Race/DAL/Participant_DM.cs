@@ -4,11 +4,12 @@
     {
         private class Participant_DM
         {
-            public int ParticipantId { get; set; }
-            public int ParticipantName { get; set; }
+            public string ParticipantId { get; set; }
+            public string ParticipantName { get; set; }
             public int RaceId { get; set; }
-            public bool Approved { get; set; }
+            public bool? Approved { get; set; }
             public int ParticipantFinished { get; set; }
+            public string Numberplate { get; set; }
         }
     }
 }

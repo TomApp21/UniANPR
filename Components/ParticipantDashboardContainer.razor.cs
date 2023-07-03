@@ -22,6 +22,8 @@ namespace UniANPR.Components
 
         private PopupCreateRace _thisCreateRacePopupRef { get; set; }
         private PopupCreateTrack _thisCreateTrackPopupRef { get; set; }
+
+        private PopupRegisterForRace _thisRegisterRacePopupRef { get; set; }
         TelerikNotification NotificationReference { get; set; }
 
 
@@ -61,13 +63,32 @@ namespace UniANPR.Components
         protected void AddNewTrack()
         {
             _thisCreateTrackPopupRef.ShowCreateTrackForm();
-
-
-
         }
 
+        protected void RegisterForARace()
+        {
+            _thisRegisterRacePopupRef.ShowRaceRegistrationForm();
+        }
 
+        protected void HandleParticipantRaceRegistration(string registeredNumberplate, int raceId)
+        {
+            bool blnSuccess = _thisRaceService.RegisterParticipantForRace(registeredNumberplate, CurrentUserId, raceId);
 
+            if (blnSuccess)
+            {
+                ShowNotification("Registered for successfully - please wait for race operator to approve request.", true);
+                // Show Notification
+            }
+            else
+            {
+                 ShowNotification("Registration failed.", false);
+            }
+        }
+
+        protected void HandleParticipantRaceRegistrationCancelled()
+        {
+
+        }
 
         #endregion
 

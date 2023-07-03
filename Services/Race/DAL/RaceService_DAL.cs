@@ -177,7 +177,7 @@ namespace UniANPR.Services.Race
                 {
                     using (SqlConnection connection = new SqlConnection(_supervisorySystemDatabaseConnectionString))
                     {
-                        String query = "INSERT INTO dbo.TrackName (" +
+                        String query = "INSERT INTO dbo.RaceTrack (" +
                                        "[TrackName]) " +
                                        "VALUES (" +
                                        "@TrackName)";
@@ -253,9 +253,11 @@ namespace UniANPR.Services.Race
                 List<Participant_DM> theseResults;
 
                 string query = "SELECT " +
-                                "[ParticipantId] " +
-                                "[Approved] " +
-                                "FROM [dbo].[RaceTrack] " +
+                                "[ParticipantId], " +
+                                "[RaceId], " +
+                                "[Approved], " +
+                                "[Numberplate] " +
+                                "FROM [dbo].[Participant] " +
                                 $"WHERE [RaceId] = {raceId} ";
                 try
                 {
@@ -277,7 +279,7 @@ namespace UniANPR.Services.Race
             /// <param name="raceId"></param>
             /// <param name="approveRacer"></param>
             /// <returns></returns>
-            internal bool ProcessParticipantAwaitingRegistration(int participantId, int raceId, bool approveRacer)
+            internal bool ProcessParticipantAwaitingRegistration(string participantId, int raceId, bool approveRacer)
             {
                 bool blnSuccess = false;
 
@@ -287,9 +289,8 @@ namespace UniANPR.Services.Race
 
                     try
                     {
-
                         SqlCommand processParticipantCommand = connection.CreateCommand();
-                        processParticipantCommand.CommandText = $"UPDATE [dbo].[Participant] SET Approved = @Approved WHERE ParticipantId=@ParticipantId AND RaceId=@VehicleId";
+                        processParticipantCommand.CommandText = $"UPDATE [dbo].[Participant] SET Approved = @Approved WHERE ParticipantId=@ParticipantId AND RaceId=@RaceId";
                         processParticipantCommand.Parameters.AddWithValue("@Approved", approveRacer);
                         processParticipantCommand.Parameters.AddWithValue("@ParticipantId", participantId);
                         processParticipantCommand.Parameters.AddWithValue("@RaceId", raceId);
@@ -308,6 +309,49 @@ namespace UniANPR.Services.Race
                 #endregion
             }
 
+            internal bool RegisterParticipantForRace(string participantId, int raceId, string numberPlate)
+            {
+                bool blnSuccess = false;
+                
+                try
+                {
+                    using (SqlConnection connection = new SqlConnection(_supervisorySystemDatabaseConnectionString))
+                    {
+                        String query = "INSERT INTO dbo.Participant (" +
+                                        "[ParticipantId], " +
+                                        "[RaceId], " +
+                                        "[Numberplate]) " +
+                                        "VALUES (" +
+                                        "@ParticipantId, " +
+                                        "@RaceId, " +
+                                        "@Numberplate)";
+
+
+                        using (SqlCommand command = new SqlCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@ParticipantId", participantId);
+                            command.Parameters.AddWithValue("@RaceId", raceId);
+                            command.Parameters.AddWithValue("@Numberplate", numberPlate);
+
+
+
+
+                            if (connection.State != ConnectionState.Open)
+                            {
+                                connection.Open();
+                            }
+
+                            command.ExecuteScalar();
+                            return blnSuccess = true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _applicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, $"Failed to retrieve race track definitions.", ex, null);
+                    return blnSuccess;
+                }
+            }
 
 
 
