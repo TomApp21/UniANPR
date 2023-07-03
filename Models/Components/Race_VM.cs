@@ -2,7 +2,7 @@
 using UniANPR.Enum;
 using UniANPR.Models.Components;
 
-namespace DemoANPR.Models.Components
+namespace UniANPR.Models.Components
 {
     public class Race_VM
     {

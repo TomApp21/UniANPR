@@ -6,6 +6,7 @@ using ABDS.Supervisory.GUI.Models.Configuration;
 using DemoANPR.Models.Components;
 using DemoANPR.Models.Services;
 using UniANPR.Enum;
+using UniANPR.Models.Components;
 
 namespace UniANPR.Services.Race
 {
@@ -25,6 +26,7 @@ namespace UniANPR.Services.Race
 
         public delegate void PendingRaceDataChangeDelegate (List<Race_SM> pendingRaceData);
 
+        public delegate void ActiveRaceLapDataChangeDelegate(List<Lap_SM> activeRaceLapData);
 
         #endregion
 
@@ -32,7 +34,9 @@ namespace UniANPR.Services.Race
 
         private Dictionary<int, RaceParticipantDataChangedDelegate> _allRaceParticipantDataChangedDelegates;
         private Dictionary<int, TrackDataChangeDelegate> _allTrackDataChangedDelegates; 
-        private Dictionary<int, PendingRaceDataChangeDelegate> _allPendingRaceDataChangedDelegates; 
+        private Dictionary<int, PendingRaceDataChangeDelegate> _allPendingRaceDataChangedDelegates;
+
+        private Dictionary<int, ActiveRaceLapDataChangeDelegate> _allActiveRaceLapDataChangeDelegates;
 
         #endregion
 
@@ -72,6 +76,7 @@ namespace UniANPR.Services.Race
             _allRaceParticipantDataChangedDelegates = new Dictionary<int, RaceParticipantDataChangedDelegate>();
             _allPendingRaceDataChangedDelegates = new Dictionary<int, PendingRaceDataChangeDelegate>();
             _allTrackDataChangedDelegates = new Dictionary<int, TrackDataChangeDelegate>();
+            _allActiveRaceLapDataChangeDelegates = new Dictionary<int, ActiveRaceLapDataChangeDelegate>();
         }
         #endregion
 
@@ -325,6 +330,60 @@ namespace UniANPR.Services.Race
             }
         }
         #endregion
+
+        #region Active Race (Lap) Data change Subscribe, call delegates and unsubscribe methods
+
+        /// <summary>
+        /// Register a delegate to receive all changes to the list of vehicle ids
+        /// </summary>
+        /// <param name="newAllVehicleIdsChangedHandler">Delegate that will get called on Add and on all changes until unsubscribed</param>
+        /// <returns>The subscriber id associated with this registration</returns>
+        public int AddSubscriber_ActiveRaceLapDataChanged(PendingRaceDataChangeDelegate newHandler)
+        {
+            int subscriberId = ThreadSafeAddToSubscriberDictionary<PendingRaceDataChangeDelegate>(_allPendingRaceDataChangedDelegates, newHandler);
+
+            Task.Run(() => { newHandler.Invoke(allRaceData.Where(x => x.StartTime > DateTime.Now).ToList()); });
+
+            return subscriberId;
+        }
+
+        /// <summary>
+        /// Remove specified subscriber to AllVehicleIdsChanged
+        /// </summary>
+        /// <param name="subscriberId">The subscriber id associated with this registration</param>
+        public void RemoveSubscriber_ActiveRaceLapDataChanged(int subscriberId)
+        {
+            ThreadSafeRemoveFromSubscriberDictionary<PendingRaceDataChangeDelegate>(_allPendingRaceDataChangedDelegates, subscriberId);
+        }
+
+
+        /// <summary>
+        /// Inform all subscribers of a change
+        /// </summary>
+        private void SendToAllActiveRaceLapDataChangedDelegates()
+        {
+            lock (_allPendingRaceDataChangedDelegates)
+            {
+                foreach (int subscriberId in _allPendingRaceDataChangedDelegates.Keys)
+                {
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            _allPendingRaceDataChangedDelegates[subscriberId].Invoke(allRaceData.Where(x => x.StartTime > DateTime.Now).ToList());
+                        }
+                        catch (Exception ex)
+                        {
+                            //_thisThreeSCApplicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, "subscriberId[" + subscriberId.ToString() + "]", ex, null);
+                        }
+                    });
+                }
+            }
+        }
+        #endregion
+
+
+
 
         #region
 

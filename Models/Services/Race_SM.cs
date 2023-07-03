@@ -2,7 +2,7 @@
 using UniANPR.Enum;
 using UniANPR.Services.Race;
 
-namespace DemoANPR.Models.Services
+namespace UniANPR.Models.Services
 {
     public class Race_SM
     {

@@ -5,7 +5,14 @@
         public int RaceId { get; set; }
         public int LapNumber { get; set; }
         public DateTime? TimeCrossed { get; set; }
+        public string ParticipantId { get; set; }
 
-        public int TeamId { get; set; }
+        public TimeSpan LastLapTime { get; set; }
+
+        public int Position { get; set; }
+
+        public TimeSpan FastestLap { get; set; }
+
+
     }
 }

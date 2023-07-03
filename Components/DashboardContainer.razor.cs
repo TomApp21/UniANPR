@@ -147,23 +147,59 @@ namespace UniANPR.Components
 
 
         private TheosAPI thisAPI = new TheosAPI();
-        protected async void TestAPI()
+protected async void TestAPI()
         {
             List<NumberPlate> detectedObjects = new List<NumberPlate>();
-            string downloadsFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Downloads\\testANPR";
+            string downloadsFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Documents\\Uni Test\\apitest100";
 
             DirectoryInfo directoryInfo = new DirectoryInfo(downloadsFolder);
             FileInfo[] files = directoryInfo.GetFiles("*.jpg"); // Change the file extension to match your image format
 
             if (files.Length > 0)
             {
-                FileInfo imageFile = files[0]; // Assuming you want to retrieve the first image file
-                Console.WriteLine("Image file found: " + imageFile.FullName);
+                foreach (FileInfo file in files)
+                {
+                    FileInfo imageFile = file; // Assuming you want to retrieve the first image file
+                    Console.WriteLine("Image file found: " + imageFile.FullName);
 
-                DateTime timeBeforeRequest = DateTime.Now;
-                detectedObjects = await thisAPI.Detect(imageFile, confThres: 0.25f, iouThres: 0.45f, ocrModel: "medium", ocrClasses: "numberplate", retries: 5, delay: 2);
-                TimeSpan elapsedTime = (DateTime.Now - timeBeforeRequest);
-                int ms = (int)elapsedTime.TotalMilliseconds;
+                    DateTime timeBeforeRequest = DateTime.Now;
+                    detectedObjects = await thisAPI.Detect(imageFile, confThres: 0.5f, iouThres: 0.5f, ocrModel: "small", ocrClasses: "numberplate", retries: 5, delay: 2);
+                    TimeSpan elapsedTime = (DateTime.Now - timeBeforeRequest);
+                    int ms = (int)elapsedTime.TotalMilliseconds;
+
+                    if (detectedObjects.Count == 0)
+                    {
+                        Console.WriteLine("No number plate found");
+                        Console.WriteLine("Time in MS: " + ms.ToString());
+
+                    }
+                    else if (detectedObjects.Count == 1)
+                    {
+                        Console.WriteLine("Recognised Text: " + detectedObjects[0].Text);
+                        Console.WriteLine("Time in MS: " + ms.ToString());
+
+                    }
+                    else if (detectedObjects.Count == 2)
+                    {
+                        Console.WriteLine("Recognised Text: " + detectedObjects[0].Text);
+                        Console.WriteLine("Recognised Text: " + detectedObjects[1].Text);
+                        Console.WriteLine("Time in MS: " + ms.ToString());
+                    }
+                    else if (detectedObjects.Count == 3)
+                    {
+                        Console.WriteLine("Recognised Text: " + detectedObjects[0].Text);
+                        Console.WriteLine("Recognised Text: " + detectedObjects[1].Text);
+                        Console.WriteLine("Recognised Text: " + detectedObjects[2].Text);
+                        Console.WriteLine("Time in MS: " + ms.ToString());
+
+                    }
+                    Console.WriteLine("----------------------------------");
+                    Console.WriteLine(" ");
+                }
+
+
+
+                //files[0].Delete();
 
                 // Perform further processing with the image file
             }
