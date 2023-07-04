@@ -1,5 +1,5 @@
-﻿using DemoANPR.Models.Components;
-using DemoANPR.Models.Services;
+﻿using UniANPR.Models.Components;
+using UniANPR.Models.Services;
 using UniANPR.Models.Services;
 using static UniANPR.Services.Race.RaceService;
 
@@ -61,6 +61,16 @@ namespace UniANPR.Interfaces
         /// </summary>
         /// <param name="subscriberId">Id of data to remove</param>
         void RemoveSubscriber_PendingRaceDataChanged(int subscriberId);
+
+
+        int AddSubscriber_ActiveRaceLapDataChanged(ActiveRaceLapDataChangeDelegate newHandler);
+
+
+        /// <summary>
+        /// Remove specified subscriber to AllVehicleIdsChanged
+        /// </summary>
+        /// <param name="subscriberId">The subscriber id associated with this registration</param>
+        void RemoveSubscriber_ActiveRaceLapDataChanged(int subscriberId);
 
     }
 }

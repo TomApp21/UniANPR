@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using UniANPR.Enum;
 
-namespace DemoANPR.Models.Components
+namespace UniANPR.Models.Components
 {
     public class Track_VM
     {

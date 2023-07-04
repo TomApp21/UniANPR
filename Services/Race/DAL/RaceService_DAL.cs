@@ -3,7 +3,7 @@ using UniANPR.Models.Services;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using ThreeSC.NetStandardLib.StandardTools.Interfaces;
-using DemoANPR.Models.Services;
+using UniANPR.Models.Services;
 
 namespace UniANPR.Services.Race
 {

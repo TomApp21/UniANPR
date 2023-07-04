@@ -1,5 +1,5 @@
-﻿using DemoANPR.Models.Components;
-using DemoANPR.Models.Services;
+﻿using UniANPR.Models.Components;
+using UniANPR.Models.Services;
 using Microsoft.AspNetCore.Components;
 using Telerik.Blazor;
 using Telerik.Blazor.Components;

@@ -1,26 +1,29 @@
 ﻿@using UniANPR.Models.Components
 @using Telerik.FontIcons
-@using UniANPR.Models.Components
 @using UniANPR.Models.Shared
 @inherits ThreeSComponentBase
 
-
-<TelerikGrid Data="@_allLapData"
+<TelerikGrid Data=@_allLapDataNow
              Height="100%"
              Class="activeRaceGrid">
                 <RowTemplate Context="data">
-                  
+                    
                     <td>@data.ParticipantId</td>
-                    <td>@data.LapNumber</td>/@_raceDetails.RequiredLaps
+                    <td>@data.LapNumber</td>
                     <td>@data.TimeCrossed</td>
                     <td>@data.LastLapTime</td>
                     <td>@data.FastestLap</td>
-
+@*
+                    <td>@data.ParticipantId</td>
+                    <td>@data.LapNumber</td>
+                    <td>@data.TimeCrossed</td>
+                    <td>@data.LastLapTime</td>
+                    <td>@data.FastestLap</td>*@
                 </RowTemplate>
     <GridColumns>
 
         <GridColumn Field=@nameof(Lap_VM.ParticipantId)
-                    Title="Team ID" Width="55px" />
+                    Title=" n" Width="55px" />
         <GridColumn Field=@nameof(Lap_VM.LapNumber)
                     Title="Lap Number" Width="120px" />
         <GridColumn Field=@nameof(Lap_VM.TimeCrossed)
@@ -33,4 +36,5 @@
     </GridColumns>
 
 </TelerikGrid>
+
 

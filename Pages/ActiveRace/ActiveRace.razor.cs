@@ -1,7 +1,7 @@
 ﻿using UniANPR.Models.Components;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
-using DemoANPR.Models.Components;
+using UniANPR.Models.Components;
 
 namespace UniANPR.Pages.ActiveRace
 {

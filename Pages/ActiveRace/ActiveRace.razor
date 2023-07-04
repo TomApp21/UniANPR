@@ -3,26 +3,3 @@
 @using UniANPR.Models.Components
 @using UniANPR.Models.ThreeSCBaseImplementations
 
-
-<TelerikGrid Data=@_allLapData
-             Height="100%"
-             Class="activeRaceGrid">
-                <RowTemplate Context="data">
-                  
-                    <td>@data.TeamId</td>
-                    <td>@data.LapNumber</td>/@_raceDetails.RequiredLaps
-                    <td>@data.TimeCrossed</td>
-
-                </RowTemplate>
-    <GridColumns>
-
-        <GridColumn Field=@nameof(Lap_VM.TeamId)
-                    Title="Team ID" Width="55px" />
-        <GridColumn Field=@nameof(Lap_VM.LapNumber)
-                    Title="Lap Number" Width="120px" />
-        <GridColumn Field=@nameof(Lap_VM.TimeCrossed)
-                    Title="Time Crossed" Width="80px" />
-
-    </GridColumns>
-
-</TelerikGrid>

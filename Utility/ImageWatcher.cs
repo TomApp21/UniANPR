@@ -1,16 +1,35 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Components;
+using System;
 using System.IO;
+using UniANPR.Interfaces;
 
 namespace UniANPR.Utility
 {
     class ImageWatcher
     {
+        [Inject]
+        private IRaceService thisRaceService { get; set; }
+
         private string folderPath;
         private FileSystemWatcher watcher;
+        private TheosAPI theosAPI;
+        private DirectoryInfo directoryInfo;
+        
+
+        //#region Parameter declerations
+
+        //[Parameter] 
+        //public OnNewImageDetectedHandler OnNewImageDetected { get; set; }
+
+        //#endregion
+
 
         public ImageWatcher(string folderPath)
         {
             this.folderPath = folderPath;
+            theosAPI = new TheosAPI();
+            directoryInfo = new DirectoryInfo(folderPath);
+
         }
 
         public void Start()
@@ -46,6 +65,12 @@ namespace UniANPR.Utility
 
         private void OnImageCreated(object sender, FileSystemEventArgs e)
         {
+
+            FileInfo[] files = directoryInfo.GetFiles(e.Name);
+            thisRaceService.AddNewTrack("s");
+
+
+
             Console.WriteLine($"New image detected: {e.Name}");
             // You can perform any desired action here when a new image is added to the folder
         }

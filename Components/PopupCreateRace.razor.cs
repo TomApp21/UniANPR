@@ -1,4 +1,4 @@
-﻿using DemoANPR.Models.Components;
+﻿using UniANPR.Models.Components;
 using Microsoft.AspNetCore.Components;
 using UniANPR.Interfaces;
 using UniANPR.Models.Services;

@@ -3,16 +3,22 @@ using ThreeSC.Net6Lib.BlazorTools.Services;
 using UniANPR.Models.Services;
 using ThreeSC.NetStandardLib.StandardTools.Interfaces;
 using ABDS.Supervisory.GUI.Models.Configuration;
-using DemoANPR.Models.Components;
-using DemoANPR.Models.Services;
+using UniANPR.Models.Components;
+using UniANPR.Models.Services;
 using UniANPR.Enum;
 using UniANPR.Models.Components;
+using UniANPR.Utility;
+using UniANPR.Models;
 
 namespace UniANPR.Services.Race
 {
     public partial class RaceService : ThreeSCServiceBase, IHostedService, IRaceService
     {
         #region Constants
+
+        private const string _c_FilePathForDetectedImages = "C:\\Users\\TomAppleyard\\Pictures\\UniANPR";
+
+
         #endregion
 
         #region Delegate Definitions
@@ -43,12 +49,21 @@ namespace UniANPR.Services.Race
         #region Declarations
         public List<Track_SM> allTrackData { get; set; }
 
+        public List<Lap_SM> allActiveRaceLapData { get; set; }
+
         public List<Race_SM> allRaceData { get; set; }
         public List<Race_SM> allPendingRaceData { get; set; }
 
         public Dictionary<int, List<Participant_SM>> allRacesParticipantsData { get; set;}
 
         private RaceService_DAL _thisRaceService_DAL;
+
+
+        
+        private string folderPath;
+        private FileSystemWatcher watcher;
+        private TheosAPI theosAPI;
+        private DirectoryInfo directoryInfo;
 
 
         #endregion
@@ -77,6 +92,10 @@ namespace UniANPR.Services.Race
             _allPendingRaceDataChangedDelegates = new Dictionary<int, PendingRaceDataChangeDelegate>();
             _allTrackDataChangedDelegates = new Dictionary<int, TrackDataChangeDelegate>();
             _allActiveRaceLapDataChangeDelegates = new Dictionary<int, ActiveRaceLapDataChangeDelegate>();
+
+            theosAPI = new TheosAPI();
+            directoryInfo = new DirectoryInfo(_c_FilePathForDetectedImages);
+
         }
         #endregion
 
@@ -94,6 +113,8 @@ namespace UniANPR.Services.Race
             InitialiseTrackData();
             InitialiseRaceData();
 
+            StartImageWatcher();
+
             return Task.CompletedTask;
         }
 
@@ -106,6 +127,62 @@ namespace UniANPR.Services.Race
         {
             return Task.CompletedTask;
         }
+        #endregion
+
+        #region Image Watcher
+
+        public void StartImageWatcher()
+        {
+            // Create a new instance of FileSystemWatcher
+            watcher = new FileSystemWatcher();
+
+            // Set the path of the folder to monitor
+            watcher.Path = _c_FilePathForDetectedImages;
+
+            // Filter only image files
+            watcher.Filter = "*.jpg"; // You can modify the filter according to your image file types
+
+            // Subscribe to the event handlers
+            watcher.Created += OnImageDetected;
+            watcher.EnableRaisingEvents = true;
+
+            Console.WriteLine("ImageWatcher started. Waiting for new images...");
+        }
+
+        public void StopImageWatcher()
+        {
+            if (watcher != null)
+            {
+                watcher.Created -= OnImageDetected;
+                watcher.EnableRaisingEvents = false;
+                watcher.Dispose();
+                watcher = null;
+            }
+
+            Console.WriteLine("ImageWatcher stopped.");
+        }
+
+        private async void OnImageDetected(object sender, FileSystemEventArgs e)
+        {
+            FileInfo file = directoryInfo.GetFiles(e.Name).FirstOrDefault();
+            
+            //file.CreationTimeUtc
+
+            List<NumberPlate> detectedObjects = new List<NumberPlate>();
+
+            DateTime timeBeforeRequest = DateTime.Now;
+            detectedObjects = await theosAPI.Detect(file, confThres: 0.5f, iouThres: 0.5f, ocrModel: "small", ocrClasses: "numberplate", retries: 5, delay: 2);
+
+            TimeSpan elapsedTime = (DateTime.Now - timeBeforeRequest);
+            int ms = (int)elapsedTime.TotalMilliseconds;
+
+
+
+            Console.WriteLine($"New image detected: {e.Name}");
+            // You can perform any desired action here when a new image is added to the folder
+        }
+
+
         #endregion
 
         #region Initialise Service Data
@@ -338,11 +415,11 @@ namespace UniANPR.Services.Race
         /// </summary>
         /// <param name="newAllVehicleIdsChangedHandler">Delegate that will get called on Add and on all changes until unsubscribed</param>
         /// <returns>The subscriber id associated with this registration</returns>
-        public int AddSubscriber_ActiveRaceLapDataChanged(PendingRaceDataChangeDelegate newHandler)
+        public int AddSubscriber_ActiveRaceLapDataChanged(ActiveRaceLapDataChangeDelegate newHandler)
         {
-            int subscriberId = ThreadSafeAddToSubscriberDictionary<PendingRaceDataChangeDelegate>(_allPendingRaceDataChangedDelegates, newHandler);
+            int subscriberId = ThreadSafeAddToSubscriberDictionary<ActiveRaceLapDataChangeDelegate>(_allActiveRaceLapDataChangeDelegates, newHandler);
 
-            Task.Run(() => { newHandler.Invoke(allRaceData.Where(x => x.StartTime > DateTime.Now).ToList()); });
+            Task.Run(() => { newHandler.Invoke(allActiveRaceLapData.Where(x => x.TimeCrossed > DateTime.Now).ToList()); });
 
             return subscriberId;
         }
@@ -353,7 +430,7 @@ namespace UniANPR.Services.Race
         /// <param name="subscriberId">The subscriber id associated with this registration</param>
         public void RemoveSubscriber_ActiveRaceLapDataChanged(int subscriberId)
         {
-            ThreadSafeRemoveFromSubscriberDictionary<PendingRaceDataChangeDelegate>(_allPendingRaceDataChangedDelegates, subscriberId);
+            ThreadSafeRemoveFromSubscriberDictionary<ActiveRaceLapDataChangeDelegate>(_allActiveRaceLapDataChangeDelegates, subscriberId);
         }
 
 
@@ -362,15 +439,15 @@ namespace UniANPR.Services.Race
         /// </summary>
         private void SendToAllActiveRaceLapDataChangedDelegates()
         {
-            lock (_allPendingRaceDataChangedDelegates)
+            lock (_allActiveRaceLapDataChangeDelegates)
             {
-                foreach (int subscriberId in _allPendingRaceDataChangedDelegates.Keys)
+                foreach (int subscriberId in _allActiveRaceLapDataChangeDelegates.Keys)
                 {
                     Task.Run(() =>
                     {
                         try
                         {
-                            _allPendingRaceDataChangedDelegates[subscriberId].Invoke(allRaceData.Where(x => x.StartTime > DateTime.Now).ToList());
+                            _allActiveRaceLapDataChangeDelegates[subscriberId].Invoke(allActiveRaceLapData.Where(x => x.TimeCrossed > DateTime.Now).ToList());
                         }
                         catch (Exception ex)
                         {

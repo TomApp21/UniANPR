@@ -1,4 +1,4 @@
-﻿using DemoANPR.Models.Components;
+﻿using UniANPR.Models.Components;
 using Microsoft.AspNetCore.Components;
 using Telerik.Blazor;
 using Telerik.Blazor.Components;
@@ -147,7 +147,7 @@ namespace UniANPR.Components
 
 
         private TheosAPI thisAPI = new TheosAPI();
-protected async void TestAPI()
+        protected async void TestAPI()
         {
             List<NumberPlate> detectedObjects = new List<NumberPlate>();
             string downloadsFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Documents\\Uni Test\\apitest100";
@@ -191,7 +191,6 @@ protected async void TestAPI()
                         Console.WriteLine("Recognised Text: " + detectedObjects[1].Text);
                         Console.WriteLine("Recognised Text: " + detectedObjects[2].Text);
                         Console.WriteLine("Time in MS: " + ms.ToString());
-
                     }
                     Console.WriteLine("----------------------------------");
                     Console.WriteLine(" ");

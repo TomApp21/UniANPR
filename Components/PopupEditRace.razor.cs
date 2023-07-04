@@ -1,4 +1,4 @@
-﻿using DemoANPR.Models.Components;
+﻿using UniANPR.Models.Components;
 using Microsoft.AspNetCore.Components;
 using UniANPR.Interfaces;
 using UniANPR.Models.Components;
@@ -8,7 +8,7 @@ using UniANPR.Models.Shared;
 using ThreeSC.NetStandardLib.StandardTools.Interfaces;
 using Telerik.Blazor.Components;
 using Telerik.Blazor;
-using DemoANPR.Models.Services;
+using UniANPR.Models.Services;
 using UniANPR.Services.Race;
 
 namespace UniANPR.Components
