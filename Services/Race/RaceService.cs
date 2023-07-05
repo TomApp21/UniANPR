@@ -176,9 +176,23 @@ namespace UniANPR.Services.Race
             TimeSpan elapsedTime = (DateTime.Now - timeBeforeRequest);
             int ms = (int)elapsedTime.TotalMilliseconds;
 
-
-
             Console.WriteLine($"New image detected: {e.Name}");
+
+
+            foreach (NumberPlate numberPlate in detectedObjects)
+            {
+                // Check if participant is included in registered race
+                // 
+
+
+            }
+
+
+
+
+
+
+
             // You can perform any desired action here when a new image is added to the folder
         }
 
@@ -464,6 +478,14 @@ namespace UniANPR.Services.Race
 
         #region
 
+        public Race_SM GetActiveRace()
+        {
+            Race_SM activeRace = new Race_SM();
+            activeRace = allRaceData.Where((x => x.StartTime.Ticks - DateTime.Now.Ticks < TimeSpan.TicksPerHour && (DateTime.Now < x.EndTime))).FirstOrDefault();
+
+            return activeRace;
+        }
+
         /// <summary>
         /// Gets list of races that user could register for.
         /// </summary>
@@ -582,6 +604,21 @@ namespace UniANPR.Services.Race
 
         #endregion
 
+        #region Utility
+
+        //private string RemoveSpecialCharacters(this string str) 
+        //{
+        //   StringBuilder sb = new StringBuilder();
+        //   foreach (char c in str) {
+        //      if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '.' || c == '_') {
+        //         sb.Append(c);
+        //      }
+        //   }
+        //   return sb.ToString();
+        //}
+
+
+        #endregion
 
     }
 }

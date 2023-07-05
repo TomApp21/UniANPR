@@ -30,6 +30,8 @@ namespace UniANPR.Components
 
         public List<Lap_VM> _allLapDataNow { get; set; }
 
+        
+
         #endregion
 
         #region Base Component Overrides
@@ -40,6 +42,21 @@ namespace UniANPR.Components
         protected override void InitialiseComponentStaticData()
         {
             _allLapDataNow = new List<Lap_VM>();
+
+            Race_SM activeRace = _thisRaceService.GetActiveRace();
+
+            if (activeRace.RaceId != 0)
+            {
+                RaceData = new Race_VM
+                {
+                    RaceId = activeRace.RaceId,
+                    StartTime = activeRace.StartTime,
+                    EndTime = activeRace.EndTime,
+                    Spots = activeRace.Spots,
+                    RaceName = activeRace.RaceName,
+                    RaceParticipants = ConvertParticipantServiceToView(activeRace.Participants)
+                };
+            }
 
         }
 
@@ -92,6 +109,23 @@ namespace UniANPR.Components
             });
         }
 
+        private List<Participant_VM> ConvertParticipantServiceToView(List<Participant_SM> participants)
+        {
+            List<Participant_VM> raceParticipants = new List<Participant_VM>();
+            
+            raceParticipants = (from p in participants
+                        select new Participant_VM()
+                        {
+                            ParticipantId = p.ParticipantId,
+                            RaceId = p.RaceId,
+                            Approved = p.Approved,
+                            Numberplate = p.Numberplate,
+                            ParticipantName = thisThreeSCUserSessionReader.DisplayNameForUserId(p.ParticipantId),
+                            ParticipantFinished = p.ParticipantFinished
+                        }).ToList();
+
+            return raceParticipants;
+        }
 
 
         

@@ -13,6 +13,8 @@ namespace UniANPR.Interfaces
         bool CheckIfTrackNameExists(string newTrackName);
         bool AddNewTrack(string trackName);
 
+        Race_SM GetActiveRace();
+
         bool ScheduleNewRace(Race_VM raceToCreate);
 
         bool ProcessParticipantAwaitingRegistration(string participantId, int raceId, bool approveRacer);
