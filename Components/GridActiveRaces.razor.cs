@@ -22,7 +22,8 @@ namespace UniANPR.Components
 
         #region Declarations
 
-        int subscriberId = 0;
+        int lapDataSubscriberId = 0;
+        private int raceBuildUpSubscriberId = 0;
 
         TelerikNotification NotificationReference { get; set; }
 
@@ -30,6 +31,7 @@ namespace UniANPR.Components
 
         public List<Lap_VM> _allLapDataNow { get; set; }
 
+        public List<Lap_VM> currentLapData { get; set; }
         
 
         #endregion
@@ -43,21 +45,25 @@ namespace UniANPR.Components
         {
             _allLapDataNow = new List<Lap_VM>();
 
-            Race_SM activeRace = _thisRaceService.GetActiveRace();
+            RaceData = new Race_VM();
 
-            if (activeRace.RaceId != 0)
-            {
-                RaceData = new Race_VM
-                {
-                    RaceId = activeRace.RaceId,
-                    StartTime = activeRace.StartTime,
-                    EndTime = activeRace.EndTime,
-                    Spots = activeRace.Spots,
-                    RaceName = activeRace.RaceName,
-                    RaceParticipants = ConvertParticipantServiceToView(activeRace.Participants)
-                };
-            }
+            //Race_SM activeRace = _thisRaceService.GetActiveRace();
 
+            //if (activeRace.RaceId != 0 || activeRace.RaceId != null)
+            //{
+            //    RaceData = new Race_VM
+            //    {
+            //        RaceId = activeRace.RaceId,
+            //        StartTime = activeRace.StartTime,
+            //        EndTime = activeRace.EndTime,
+            //        Spots = activeRace.Spots,
+            //        RaceName = activeRace.RaceName,
+            //        RaceParticipants = ConvertParticipantServiceToView(activeRace.Participants)
+            //    };
+            //}
+
+            raceBuildUpSubscriberId = _thisRaceService.AddSubscriber_ActiveRaceBuildUpDataChanged(HandleNewBuildUpRaceDataReceived);
+            lapDataSubscriberId = _thisRaceService.AddSubscriber_ActiveRaceLapDataChanged(HandleNewLapDataReceived);
         }
 
         protected override void OnFirstRender()
@@ -66,7 +72,15 @@ namespace UniANPR.Components
 
         protected override void OnDispose()
         {
+            if (raceBuildUpSubscriberId != 0)
+            {
+                _thisRaceService.RemoveSubscriber_ActiveRaceBuildUpDataChanged(raceBuildUpSubscriberId);
+            }
 
+            if (lapDataSubscriberId != 0)
+            {
+                _thisRaceService.RemoveSubscriber_ActiveRaceLapDataChanged(lapDataSubscriberId);
+            }
         }
 
         #endregion
@@ -78,12 +92,80 @@ namespace UniANPR.Components
         /// Create the map and layer data from teh published site details
         /// </summary>
         /// <param name="siteConfigurationData"></param>
-        private void HandleNewPendingRaceDataReceived(List<Race_SM> pendingRaceData)
+        private void HandleNewLapDataReceived(List<Lap_SM> lapData)
         {
+            InvokeAsync(() =>
+            {
+                _allLapDataNow = (from ld in lapData
+                                  select new Lap_VM()
+                                  {
+                                      RaceId = ld.RaceId,
+                                      LapNumber = ld.LapNumber,
+                                      ParticipantId = ld.ParticipantId,
+                                      TimeCrossed = ld.TimeCrossed,
+                                      ParticipantName = thisThreeSCUserSessionReader.DisplayNameForUserId(ld.ParticipantId),
+                                  }).ToList();
 
+                currentLapData = _allLapDataNow.Where(x => x.TimeCrossed == null).ToList();
+                PopulateRestOfLapData();
+
+                StateHasChanged();
+            });
         }
 
         #endregion
+
+        #region Handle Race Build Up Data Changed
+
+        /// <summary>
+        /// Published site data has changed (or set on first subscription)
+        /// Create the map and layer data from teh published site details
+        /// </summary>
+        /// <param name="siteConfigurationData"></param>
+        private void HandleNewBuildUpRaceDataReceived(Race_SM activeRace)
+        {
+            InvokeAsync(() =>
+            {
+                if (activeRace != null)
+                {
+                    RaceData = new Race_VM
+                    {
+                        RaceId = activeRace.RaceId,
+                        RaceTrackId = activeRace.RaceTrackId,
+                        RaceTrackName = _thisRaceService.allTrackData.Where(x => x.TrackId == activeRace.RaceTrackId).FirstOrDefault().TrackName,
+                        RequiredLaps = activeRace.RequiredLaps,
+                        Spots = activeRace.Spots,
+                        StartTime = activeRace.StartTime,
+                        EndTime = activeRace.EndTime,
+                        RaceName = activeRace.RaceName,
+                        RaceStatus = (RaceStatus)activeRace.RaceStatus,
+                        RegisteredParticipants = activeRace.ActiveParticipants,
+                        RaceParticipants = ConvertParticipantServiceToView(activeRace.Participants)
+                    };
+                }
+
+
+                StateHasChanged();
+            });
+        }
+
+        #endregion
+
+        private void PopulateRestOfLapData()
+        {
+            foreach (Lap_VM lap in currentLapData)
+            {
+                lap.FastestLap = _thisRaceService.CalculateFastestLapForRacer(_allLapDataNow.Where(x => x.ParticipantId == lap.ParticipantId).ToList());
+                lap.LastLapTime = _thisRaceService.CalculateLastLapTime(_allLapDataNow.Where(x => x.ParticipantId == lap.ParticipantId).ToList());
+            }
+
+        }
+
+        #region
+
+
+        #endregion
+
 
         #region Event Handlers
 

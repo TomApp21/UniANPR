@@ -3,35 +3,34 @@
 @using UniANPR.Models.Shared
 @inherits ThreeSComponentBase
 
+<TelerikButton>Start</TelerikButton>
+
+<span><b>Race:</b> @RaceData.RaceName | <b>Start Time:</b> @RaceData.StartTime | <b>End Time:</b> @RaceData.EndTime | <b>Track: </b>@RaceData.RaceTrackName </span>
+
+
 <TelerikGrid Data=@_allLapDataNow
              Height="100%"
              Class="activeRaceGrid">
                 <RowTemplate Context="data">
                     
-                    <td>@data.ParticipantId</td>
-                    <td>@data.LapNumber</td>
+                    <td>@data.ParticipantName</td>
+                    <td>@data.LapNumber / @RaceData.RequiredLaps</td>
                     <td>@data.TimeCrossed</td>
                     <td>@data.LastLapTime</td>
                     <td>@data.FastestLap</td>
-@*
-                    <td>@data.ParticipantId</td>
-                    <td>@data.LapNumber</td>
-                    <td>@data.TimeCrossed</td>
-                    <td>@data.LastLapTime</td>
-                    <td>@data.FastestLap</td>*@
                 </RowTemplate>
     <GridColumns>
 
-        <GridColumn Field=@nameof(Lap_VM.ParticipantId)
-                    Title=" n" Width="55px" />
+        <GridColumn Field=@nameof(Lap_VM.ParticipantName)
+                    Title="Name" Width="65px" />
         <GridColumn Field=@nameof(Lap_VM.LapNumber)
-                    Title="Lap Number" Width="120px" />
+                    Title="Lap Number" Width="40px" />
         <GridColumn Field=@nameof(Lap_VM.TimeCrossed)
-                    Title="Time Crossed" Width="80px" />
+                    Title="Time" Width="80px" />
         <GridColumn Field=@nameof(Lap_VM.LastLapTime)
-                    Title="Time Crossed" Width="80px" />
+                    Title="Last Lap Time" Width="80px" />
         <GridColumn Field=@nameof(Lap_VM.FastestLap)
-                        Title="Time Crossed" Width="80px" />
+                        Title="Fastest Lap" Width="80px" />
 
     </GridColumns>
 

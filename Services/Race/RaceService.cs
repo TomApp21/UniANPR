@@ -16,7 +16,7 @@ namespace UniANPR.Services.Race
     {
         #region Constants
 
-        private const string _c_FilePathForDetectedImages = "C:\\Users\\TomAppleyard\\Pictures\\UniANPR";
+        private const string _c_FilePathForDetectedImages = "C:\\Users\\TomAppleyard\\Pictures";
 
 
         #endregion
@@ -33,6 +33,9 @@ namespace UniANPR.Services.Race
         public delegate void PendingRaceDataChangeDelegate (List<Race_SM> pendingRaceData);
 
         public delegate void ActiveRaceLapDataChangeDelegate(List<Lap_SM> activeRaceLapData);
+        
+        public delegate void ActiveRaceBuildUpDataChangeDelegate(Race_SM activeRaceBuildUpData);
+
 
         #endregion
 
@@ -43,6 +46,8 @@ namespace UniANPR.Services.Race
         private Dictionary<int, PendingRaceDataChangeDelegate> _allPendingRaceDataChangedDelegates;
 
         private Dictionary<int, ActiveRaceLapDataChangeDelegate> _allActiveRaceLapDataChangeDelegates;
+                private Dictionary<int, ActiveRaceBuildUpDataChangeDelegate> _allActiveRaceBuildUpDataChangeDelegates;
+
 
         #endregion
 
@@ -54,7 +59,12 @@ namespace UniANPR.Services.Race
         public List<Race_SM> allRaceData { get; set; }
         public List<Race_SM> allPendingRaceData { get; set; }
 
+        public List<Lap_SM> allLapData { get; set; }
+
         public Dictionary<int, List<Participant_SM>> allRacesParticipantsData { get; set;}
+        public bool raceIsActive { get; set; }
+
+        public Race_SM activeRace { get; set; }
 
         private RaceService_DAL _thisRaceService_DAL;
 
@@ -69,6 +79,8 @@ namespace UniANPR.Services.Race
         #endregion
 
         #region Private declarations
+
+
 
         private IThreeSCApplicationLogger _thisThreeSCApplicationLogger;
         //private IThreeSCUserAuditLogger<_enmABDSGUIUserAuditEnum
@@ -92,10 +104,18 @@ namespace UniANPR.Services.Race
             _allPendingRaceDataChangedDelegates = new Dictionary<int, PendingRaceDataChangeDelegate>();
             _allTrackDataChangedDelegates = new Dictionary<int, TrackDataChangeDelegate>();
             _allActiveRaceLapDataChangeDelegates = new Dictionary<int, ActiveRaceLapDataChangeDelegate>();
+            _allActiveRaceBuildUpDataChangeDelegates = new Dictionary<int, ActiveRaceBuildUpDataChangeDelegate>();
 
             theosAPI = new TheosAPI();
             directoryInfo = new DirectoryInfo(_c_FilePathForDetectedImages);
 
+
+            System.Timers.Timer timer = new System.Timers.Timer();
+            timer.Interval = 60000;
+            timer.Elapsed += timer_Elapsed;
+            timer.Start();
+
+            raceIsActive = false;
         }
         #endregion
 
@@ -112,6 +132,7 @@ namespace UniANPR.Services.Race
             //InitialisePublishedGeofenceData();
             InitialiseTrackData();
             InitialiseRaceData();
+            InitialiseLapData();
 
             StartImageWatcher();
 
@@ -257,6 +278,29 @@ namespace UniANPR.Services.Race
                                      RaceStatus = (RaceStatus)rd.RaceStatusEnumValue,
                                      Participants = allRacesParticipants[rd.Id]
                                  }).ToList();
+
+            activeRace = allRaceData.Where((x => x.StartTime.Ticks - DateTime.Now.Ticks < TimeSpan.TicksPerHour && (DateTime.Now < x.EndTime))).FirstOrDefault();
+
+            if (activeRace != null && activeRace.StartTime > DateTime.Now.AddHours(-1))
+            {
+                raceIsActive = true;
+            }
+        }
+
+        /// <summary>
+        ///  Gets track data on start-up
+        /// </summary>
+        private void InitialiseLapData()
+        {
+            allLapData =  (from ld in _thisRaceService_DAL.GetAllLapData()
+                          select new Lap_SM()
+                          {
+                              ParticipantId = ld.UserId,
+                              RaceId = ld.RaceId,
+                              LapNumber = ld.LapNumber,
+                              TimeCrossed = ld.TimeCrossed
+                          }).ToList();
+
         }
 
 
@@ -371,7 +415,7 @@ namespace UniANPR.Services.Race
         #endregion
 
 
-        #region AllVehicleIds Subscribe, call delegates and unsubscribe methods
+        #region Pending Race Subscribe, call delegates and unsubscribe methods
 
         /// <summary>
         /// Register a delegate to receive all changes to the list of vehicle ids
@@ -382,7 +426,7 @@ namespace UniANPR.Services.Race
         {
             int subscriberId = ThreadSafeAddToSubscriberDictionary<PendingRaceDataChangeDelegate>(_allPendingRaceDataChangedDelegates, newHandler);
 
-            Task.Run(() => { newHandler.Invoke(allRaceData.Where(x => x.StartTime > DateTime.Now).ToList()); });
+            Task.Run(() => { newHandler.Invoke(allRaceData.Where(x => x.StartTime > DateTime.Now && (x.StartTime.Ticks - DateTime.Now.Ticks > TimeSpan.TicksPerHour)).ToList()); });
 
             return subscriberId;
         }
@@ -433,7 +477,7 @@ namespace UniANPR.Services.Race
         {
             int subscriberId = ThreadSafeAddToSubscriberDictionary<ActiveRaceLapDataChangeDelegate>(_allActiveRaceLapDataChangeDelegates, newHandler);
 
-            Task.Run(() => { newHandler.Invoke(allActiveRaceLapData.Where(x => x.TimeCrossed > DateTime.Now).ToList()); });
+            Task.Run(() => { newHandler.Invoke(allLapData.Where(x => x.RaceId == activeRace.RaceId).ToList()); });
 
             return subscriberId;
         }
@@ -461,7 +505,7 @@ namespace UniANPR.Services.Race
                     {
                         try
                         {
-                            _allActiveRaceLapDataChangeDelegates[subscriberId].Invoke(allActiveRaceLapData.Where(x => x.TimeCrossed > DateTime.Now).ToList());
+                            _allActiveRaceLapDataChangeDelegates[subscriberId].Invoke(allLapData.Where(x => x.RaceId == activeRace.RaceId).ToList());
                         }
                         catch (Exception ex)
                         {
@@ -473,8 +517,57 @@ namespace UniANPR.Services.Race
         }
         #endregion
 
+        #region Active Race (Build-Up) Data change subscribe, call delegates, and unsubscribe method
+
+                /// <summary>
+        /// Register a delegate to receive all changes to the list of vehicle ids
+        /// </summary>
+        /// <param name="newAllVehicleIdsChangedHandler">Delegate that will get called on Add and on all changes until unsubscribed</param>
+        /// <returns>The subscriber id associated with this registration</returns>
+        public int AddSubscriber_ActiveRaceBuildUpDataChanged(ActiveRaceBuildUpDataChangeDelegate newHandler)
+        {
+            int subscriberId = ThreadSafeAddToSubscriberDictionary<ActiveRaceBuildUpDataChangeDelegate>(_allActiveRaceBuildUpDataChangeDelegates, newHandler);
+
+            Task.Run(() => { newHandler.Invoke(activeRace); });
+
+            return subscriberId;
+        }
+
+        /// <summary>
+        /// Remove specified subscriber to AllVehicleIdsChanged
+        /// </summary>
+        /// <param name="subscriberId">The subscriber id associated with this registration</param>
+        public void RemoveSubscriber_ActiveRaceBuildUpDataChanged(int subscriberId)
+        {
+            ThreadSafeRemoveFromSubscriberDictionary<ActiveRaceBuildUpDataChangeDelegate>(_allActiveRaceBuildUpDataChangeDelegates, subscriberId);
+        }
 
 
+        /// <summary>
+        /// Inform all subscribers of a change
+        /// </summary>
+        private void SendToAllActiveRaceBuildUpDataChangedDelegates()
+        {
+            lock (_allActiveRaceBuildUpDataChangeDelegates)
+            {
+                foreach (int subscriberId in _allActiveRaceBuildUpDataChangeDelegates.Keys)
+                {
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            _allActiveRaceBuildUpDataChangeDelegates[subscriberId].Invoke(activeRace);
+                        }
+                        catch (Exception ex)
+                        {
+                            //_thisThreeSCApplicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, "subscriberId[" + subscriberId.ToString() + "]", ex, null);
+                        }
+                    });
+                }
+            }
+        }
+
+        #endregion
 
         #region
 
@@ -573,6 +666,14 @@ namespace UniANPR.Services.Race
 
             if (blnSuccess)
             {
+                // If accepted, want to create a default entry into lap table for first lap
+                // ------------------------------------------------------------------------
+                if (approveRacer)
+                {
+                    _thisRaceService_DAL.AddStartingLapForParticipant(participantId, raceId);
+                }
+
+
                 InitialiseRaceData();
                 SendToAllPendingRaceDataChangedDelegates();
             }
@@ -606,6 +707,18 @@ namespace UniANPR.Services.Race
 
         #region Utility
 
+        public TimeSpan CalculateFastestLapForRacer(List<Lap_VM> lapData)
+        {
+           return lapData.OrderByDescending(x => x.LastLapTime).Select(x => x.LastLapTime).FirstOrDefault();
+        }
+
+        public TimeSpan CalculateLastLapTime(List<Lap_VM> lapData)
+        {
+           return lapData.OrderByDescending(x => x.LapNumber).Select(x => x.LastLapTime).FirstOrDefault();
+        }
+
+
+
         //private string RemoveSpecialCharacters(this string str) 
         //{
         //   StringBuilder sb = new StringBuilder();
@@ -616,6 +729,29 @@ namespace UniANPR.Services.Race
         //   }
         //   return sb.ToString();
         //}
+
+        private void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            //YourCode
+            // Check pending races for active race
+
+            if (!raceIsActive)
+            {
+                activeRace = allRaceData.Where((x => x.StartTime.Ticks - DateTime.Now.Ticks < TimeSpan.TicksPerHour && (DateTime.Now < x.EndTime))).FirstOrDefault();
+                
+                if (activeRace != null)
+                {
+                    SendToAllPendingRaceDataChangedDelegates();
+                    SendToAllActiveRaceBuildUpDataChangedDelegates();
+
+                    raceIsActive = true;
+                    // Send to all active race delegates
+                }
+
+
+
+            }
+        }
 
 
         #endregion

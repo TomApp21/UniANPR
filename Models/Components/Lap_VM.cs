@@ -14,5 +14,9 @@
         public TimeSpan FastestLap { get; set; }
 
 
+
+
+        public string ParticipantName { get; set; }
+
     }
 }

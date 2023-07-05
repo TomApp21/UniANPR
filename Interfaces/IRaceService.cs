@@ -74,5 +74,17 @@ namespace UniANPR.Interfaces
         /// <param name="subscriberId">The subscriber id associated with this registration</param>
         void RemoveSubscriber_ActiveRaceLapDataChanged(int subscriberId);
 
+
+
+        int AddSubscriber_ActiveRaceBuildUpDataChanged(ActiveRaceBuildUpDataChangeDelegate newHandler);
+        void RemoveSubscriber_ActiveRaceBuildUpDataChanged(int subscriberId);
+
+
+
+        TimeSpan CalculateFastestLapForRacer(List<Lap_VM> lapData);
+
+        TimeSpan CalculateLastLapTime(List<Lap_VM> lapData);
+
+
     }
 }

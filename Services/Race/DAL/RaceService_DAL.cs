@@ -40,7 +40,7 @@ namespace UniANPR.Services.Race
             /// <summary>
             /// Log a race lap
             /// </summary>
-            internal void LogRaceLap(int userId, Lap_SM thisLap)
+            internal void LogRaceLap(int userId, Lap_DM thisLap)
             {
                 try
                 {
@@ -104,6 +104,32 @@ namespace UniANPR.Services.Race
                 {
                     _applicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, $"Failed to retrieve races.", ex, null);
                     theseResults = new List<Race_DM>();
+                }
+
+                return theseResults;
+            }
+
+            
+            internal List<Lap_DM> GetAllLapData()
+            {
+                List<Lap_DM> theseResults;
+
+                string query = "SELECT " +
+                                "[Id]," +
+                                "[RaceId], " +
+                                "[UserId]," +
+                                "[LapNumber], " +
+                                "[TimeCrossed]" +
+                                "FROM [dbo].[Lap] ";
+
+                try
+                {
+                    theseResults = SQLHelper.ReadTableFromDatabaseIntoList<Lap_DM>(_supervisorySystemDatabaseConnectionString, query);
+                }
+                catch (Exception ex)
+                {
+                    _applicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, $"Failed to retrieve races.", ex, null);
+                    theseResults = new List<Lap_DM>();
                 }
 
                 return theseResults;
@@ -353,7 +379,49 @@ namespace UniANPR.Services.Race
                 }
             }
 
+            internal bool AddStartingLapForParticipant(string participantId, int raceId)
+            {
+                bool blnSuccess = false;
+                
+                try
+                {
+                    using (SqlConnection connection = new SqlConnection(_supervisorySystemDatabaseConnectionString))
+                    {
+                        String query = "INSERT INTO dbo.Lap (" +
+                                        "[RaceId], " +
+                                        "[UserId], " +
+                                        "[LapNumber]) " +
 
+                                        "VALUES (" +
+                                        "@RaceId, " +
+                                        "@UserId, " +
+                                        "@LapNumber)";
+
+
+                        using (SqlCommand command = new SqlCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@RaceId", raceId);
+                            command.Parameters.AddWithValue("@UserId", participantId);
+                            command.Parameters.AddWithValue("@LapNumber", 0);
+
+                            if (connection.State != ConnectionState.Open)
+                            {
+                                connection.Open();
+                            }
+
+                            command.ExecuteScalar();
+                            return blnSuccess = true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _applicationLogger.LogUnexpectedException(enmUniqueueLogCode.NotApplicable, $"Failed to retrieve race track definitions.", ex, null);
+                    return blnSuccess;
+                }
+            }
+
+            
 
         }
     }
