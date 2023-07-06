@@ -156,7 +156,12 @@ namespace UniANPR.Components
         protected async void SelectedRaceChanged()
         {
             ParticipantNumberplate = string.Empty;
-            SelectedRace = EligibleRaces.Where(x => x.RaceId == selectedRaceId).FirstOrDefault();
+
+            if (selectedRaceId != 0)
+            {
+                SelectedRace = EligibleRaces.Where(x => x.RaceId == selectedRaceId).FirstOrDefault();
+            }
+
             StateHasChanged();
 
             //if (CurrentGeofenceDetails.GeofenceType == GeofenceType.Invalid)

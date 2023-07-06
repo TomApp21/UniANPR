@@ -3,12 +3,16 @@
 @using UniANPR.Models.Shared
 @inherits ThreeSComponentBase
 
-<TelerikButton>Start</TelerikButton>
 
-<span><b>Race:</b> @RaceData.RaceName | <b>Start Time:</b> @RaceData.StartTime | <b>End Time:</b> @RaceData.EndTime | <b>Track: </b>@RaceData.RaceTrackName </span>
+@if (RaceData.RaceTrackId != 0)
+{
+    <TelerikButton OnClick="@StartRace"> Start</TelerikButton>
+
+   <span>              </span> <span style="padding-left: 10px;"><b>Race:</b> @RaceData.RaceName | <b>Start Time:</b> @RaceData.StartTime | <b>End Time:</b> @RaceData.EndTime | <b>Track: </b>@RaceData.RaceTrackName </span>
+}
 
 
-<TelerikGrid Data=@_allLapDataNow
+<TelerikGrid Data=@currentLapData
              Height="100%"
              Class="activeRaceGrid">
                 <RowTemplate Context="data">

@@ -33,6 +33,7 @@ namespace UniANPR.Components
 
         public List<Lap_VM> currentLapData { get; set; }
         
+        List<string> participantIds { get; set; }
 
         #endregion
 
@@ -104,6 +105,7 @@ namespace UniANPR.Components
                                       ParticipantId = ld.ParticipantId,
                                       TimeCrossed = ld.TimeCrossed,
                                       ParticipantName = thisThreeSCUserSessionReader.DisplayNameForUserId(ld.ParticipantId),
+                                      CumulativeTime = ld.CumulativeTime
                                   }).ToList();
 
                 currentLapData = _allLapDataNow.Where(x => x.TimeCrossed == null).ToList();
@@ -126,7 +128,7 @@ namespace UniANPR.Components
         {
             InvokeAsync(() =>
             {
-                if (activeRace != null)
+                if (activeRace.RaceTrackId != 0)
                 {
                     RaceData = new Race_VM
                     {
@@ -142,7 +144,12 @@ namespace UniANPR.Components
                         RegisteredParticipants = activeRace.ActiveParticipants,
                         RaceParticipants = ConvertParticipantServiceToView(activeRace.Participants)
                     };
+
+                                    participantIds = RaceData.RaceParticipants.Select(x => x.ParticipantId).ToList();
+
                 }
+
+
 
 
                 StateHasChanged();
@@ -157,7 +164,21 @@ namespace UniANPR.Components
             {
                 lap.FastestLap = _thisRaceService.CalculateFastestLapForRacer(_allLapDataNow.Where(x => x.ParticipantId == lap.ParticipantId).ToList());
                 lap.LastLapTime = _thisRaceService.CalculateLastLapTime(_allLapDataNow.Where(x => x.ParticipantId == lap.ParticipantId).ToList());
+
+
             }
+
+            // Order participants by cumulative time and lap number
+            var orderedParticipants = _allLapDataNow.Where(x => x.RaceId == RaceData.RaceId).OrderBy(p => p.CumulativeTime)
+                                             .ThenByDescending(p => p.LapNumber)
+                                             .ToList();
+
+            //Assign positions based on the ordering
+            //for (int i = 0; i < orderedParticipants.Count; i++)
+            //{
+            //    currentLapData.Where(x => x.ParticipantId == currentLapData[i].ParticipantId).FirstOrDefault().Position = orderedParticipants[i].Position = i + 1;
+            //}
+
 
         }
 
@@ -169,9 +190,18 @@ namespace UniANPR.Components
 
         #region Event Handlers
 
-        protected void DeletePendingRace()
+        protected void StartRace()
         {
-            //_thisCreateTrackPopupRef.ShowCreateTrackForm();
+            if (DateTime.Now > RaceData.StartTime)
+            {
+                // start race
+                // set time crossed to date time.now for every participant
+
+                // drop images in to simulate
+
+
+
+            }
         }
 
         #endregion

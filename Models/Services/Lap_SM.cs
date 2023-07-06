@@ -10,6 +10,8 @@ namespace UniANPR.Models.Services
         public string ParticipantId { get; set; }
         public int LapNumber { get; set; }
         public DateTime? TimeCrossed { get; set; }
+        public TimeSpan CumulativeTime { get; set; }
+
 
         
     }

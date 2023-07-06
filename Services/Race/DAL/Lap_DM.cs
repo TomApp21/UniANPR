@@ -9,6 +9,8 @@
             public string UserId { get; set; }
             public int LapNumber { get; set; }
             public DateTime? TimeCrossed { get; set; }
+
+            public Int64 CumulativeTime { get; set; }
         }
     }
 }

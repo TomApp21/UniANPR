@@ -16,7 +16,7 @@ namespace UniANPR.Services.Race
     {
         #region Constants
 
-        private const string _c_FilePathForDetectedImages = "C:\\Users\\TomAppleyard\\Pictures";
+        private const string _c_FilePathForDetectedImages = "C:\\Users\\TomAppleyard\\Downloads\\Uni Test Folder";
 
 
         #endregion
@@ -185,36 +185,66 @@ namespace UniANPR.Services.Race
 
         private async void OnImageDetected(object sender, FileSystemEventArgs e)
         {
-            FileInfo file = directoryInfo.GetFiles(e.Name).FirstOrDefault();
-            
-            //file.CreationTimeUtc
-
-            List<NumberPlate> detectedObjects = new List<NumberPlate>();
-
-            DateTime timeBeforeRequest = DateTime.Now;
-            detectedObjects = await theosAPI.Detect(file, confThres: 0.5f, iouThres: 0.5f, ocrModel: "small", ocrClasses: "numberplate", retries: 5, delay: 2);
-
-            TimeSpan elapsedTime = (DateTime.Now - timeBeforeRequest);
-            int ms = (int)elapsedTime.TotalMilliseconds;
-
-            Console.WriteLine($"New image detected: {e.Name}");
-
-
-            foreach (NumberPlate numberPlate in detectedObjects)
+            if (raceIsActive && DateTime.Now > activeRace.StartTime)
             {
-                // Check if participant is included in registered race
-                // 
+                FileInfo file = directoryInfo.GetFiles(e.Name).FirstOrDefault();
+            
+                //file.CreationTimeUtc
 
+                List<NumberPlate> detectedObjects = new List<NumberPlate>();
 
+                DateTime timeBeforeRequest = DateTime.Now;
+                //detectedObjects = await theosAPI.Detect(file, confThres: 0.5f, iouThres: 0.5f, ocrModel: "medium", ocrClasses: "numberplate", retries: 5, delay: 2);
+
+                TimeSpan elapsedTime = (DateTime.Now - timeBeforeRequest);
+                int ms = (int)elapsedTime.TotalMilliseconds;
+
+                Console.WriteLine($"New image detected: {e.Name}");
+
+                NumberPlate x = new NumberPlate { Text = "51A-897.14" };
+                detectedObjects.Add(x);
+
+                foreach (NumberPlate numberPlate in detectedObjects)
+                {
+                    // Check if participant is included in registered race
+                    // --------------------------------------------------
+                    if (activeRace.Participants.Select(x => x.Numberplate).ToList().Contains(numberPlate.Text))
+                    {
+                        string participantId = activeRace.Participants.Where(x => x.Numberplate == numberPlate.Text).Select(x => x.ParticipantId).FirstOrDefault();
+
+                        Lap_SM lastLap = allLapData.Where(x => x.RaceId == activeRace.RaceId && x.ParticipantId == participantId).OrderByDescending(x => x.LapNumber).FirstOrDefault();
+
+                        // Check if first lap, if is then camera should ignore
+                        // ---------------------------------------------------------------------------
+                        if (lastLap.LapNumber != 0 || (lastLap.LapNumber == 0 && lastLap.TimeCrossed != null))
+                        {
+                            Lap_DM newLap = new Lap_DM()
+                            {
+                                UserId = participantId,
+                                RaceId = activeRace.RaceId,
+                                TimeCrossed = file.CreationTimeUtc,
+                                LapNumber = lastLap.LapNumber++,
+                                CumulativeTime = (lastLap.CumulativeTime + (file.CreationTime - lastLap.TimeCrossed)).Value.Ticks
+                            };
+
+                            // Add to Dal
+                            // call subscriber
+
+                            _thisRaceService_DAL.LogRaceLap(participantId, newLap);
+                            _thisRaceService_DAL.AddEmptyLapForParticipant(participantId, activeRace.RaceId, lastLap.LapNumber++);
+
+                            InitialiseLapData();
+                            SendToAllActiveRaceLapDataChangedDelegates();
+                        }
+                    }
+                    else
+                    {
+                        // did not recognise numberplate? 
+                        // trigger manual entry
+                    }
+                }
             }
-
-
-
-
-
-
-
-            // You can perform any desired action here when a new image is added to the folder
+        
         }
 
 
@@ -279,12 +309,21 @@ namespace UniANPR.Services.Race
                                      Participants = allRacesParticipants[rd.Id]
                                  }).ToList();
 
+
             activeRace = allRaceData.Where((x => x.StartTime.Ticks - DateTime.Now.Ticks < TimeSpan.TicksPerHour && (DateTime.Now < x.EndTime))).FirstOrDefault();
 
-            if (activeRace != null && activeRace.StartTime > DateTime.Now.AddHours(-1))
+            if (activeRace == null)
             {
-                raceIsActive = true;
+                activeRace = new Race_SM();
             }
+            else
+            {
+                if (DateTime.Now > activeRace.StartTime.AddHours(-1))
+                {
+                    raceIsActive = true;
+                }
+            }
+
         }
 
         /// <summary>
@@ -298,7 +337,8 @@ namespace UniANPR.Services.Race
                               ParticipantId = ld.UserId,
                               RaceId = ld.RaceId,
                               LapNumber = ld.LapNumber,
-                              TimeCrossed = ld.TimeCrossed
+                              TimeCrossed = ld.TimeCrossed,
+                              CumulativeTime = TimeSpan.FromTicks(ld.CumulativeTime)
                           }).ToList();
 
         }
@@ -670,7 +710,7 @@ namespace UniANPR.Services.Race
                 // ------------------------------------------------------------------------
                 if (approveRacer)
                 {
-                    _thisRaceService_DAL.AddStartingLapForParticipant(participantId, raceId);
+                    _thisRaceService_DAL.AddEmptyLapForParticipant(participantId, raceId, 0);
                 }
 
 
@@ -719,6 +759,7 @@ namespace UniANPR.Services.Race
 
 
 
+
         //private string RemoveSpecialCharacters(this string str) 
         //{
         //   StringBuilder sb = new StringBuilder();
@@ -743,6 +784,7 @@ namespace UniANPR.Services.Race
                 {
                     SendToAllPendingRaceDataChangedDelegates();
                     SendToAllActiveRaceBuildUpDataChangedDelegates();
+                    SendToAllActiveRaceLapDataChangedDelegates();
 
                     raceIsActive = true;
                     // Send to all active race delegates

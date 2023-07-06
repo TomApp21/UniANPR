@@ -40,7 +40,7 @@ namespace UniANPR.Services.Race
             /// <summary>
             /// Log a race lap
             /// </summary>
-            internal void LogRaceLap(int userId, Lap_DM thisLap)
+            internal void LogRaceLap(string userId, Lap_DM thisLap)
             {
                 try
                 {
@@ -50,12 +50,15 @@ namespace UniANPR.Services.Race
                                        "[RaceId], " +
                                        "[UserId], " +
                                        "[LapNumber], " +
-                                       "[TimeCrossed]) " +
+                                       "[TimeCrossed]," +
+                                       "[CumulativeTime]) " +
                                        "VALUES (" +
                                        "@RaceId, " +
                                        "@UserId, " +
                                        "@LapNumber, " +
-                                       "@TimeCrossed)";
+                                       "@TimeCrossed, " +
+                                       "@CumulativeTime)";
+                                       
 
 
                         using (SqlCommand command = new SqlCommand(query, connection))
@@ -64,6 +67,8 @@ namespace UniANPR.Services.Race
                             command.Parameters.AddWithValue("@UserId", userId);
                             command.Parameters.AddWithValue("@LapNumber", thisLap.LapNumber);
                             command.Parameters.AddWithValue("@TimeCrossed", thisLap.TimeCrossed);
+                            command.Parameters.AddWithValue("@CumulativeTime", thisLap.CumulativeTime);
+
 
                             if (connection.State != ConnectionState.Open)
                             {
@@ -119,7 +124,8 @@ namespace UniANPR.Services.Race
                                 "[RaceId], " +
                                 "[UserId]," +
                                 "[LapNumber], " +
-                                "[TimeCrossed]" +
+                                "[TimeCrossed]," +
+                                "[CumulativeTime]" +
                                 "FROM [dbo].[Lap] ";
 
                 try
@@ -379,7 +385,7 @@ namespace UniANPR.Services.Race
                 }
             }
 
-            internal bool AddStartingLapForParticipant(string participantId, int raceId)
+            internal bool AddEmptyLapForParticipant(string participantId, int raceId, int lapNumber)
             {
                 bool blnSuccess = false;
                 
@@ -402,7 +408,7 @@ namespace UniANPR.Services.Race
                         {
                             command.Parameters.AddWithValue("@RaceId", raceId);
                             command.Parameters.AddWithValue("@UserId", participantId);
-                            command.Parameters.AddWithValue("@LapNumber", 0);
+                            command.Parameters.AddWithValue("@LapNumber", lapNumber);
 
                             if (connection.State != ConnectionState.Open)
                             {

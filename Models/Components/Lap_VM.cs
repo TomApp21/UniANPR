@@ -10,6 +10,8 @@
         public TimeSpan LastLapTime { get; set; }
 
         public int Position { get; set; }
+                    public TimeSpan CumulativeTime { get; set; }
+
 
         public TimeSpan FastestLap { get; set; }
 
